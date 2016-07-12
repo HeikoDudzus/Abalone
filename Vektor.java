@@ -1,6 +1,6 @@
 
 /**
- * Write a description of class Vektor here.
+ * Vektoren fuer Verschiebungen auf dem Abalone-Brett in orthogonalisierter Repraesentation
  * 
  * @author (your name) 
  * @version (a version number or a date)

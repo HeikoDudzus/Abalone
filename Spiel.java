@@ -1,15 +1,28 @@
 
 /**
- * Write a description of class Spielfeld here.
+ * Spiel-Logik fuer das Brettspiel Abalone.
+ * 
+ * Das Abalone-Spielbrett, dessen Verbindungslinien zwischen den Nachbarfeldern im Winkel 
+ * von 60 Grad zueinander stehen, kann intern durch ein orthogonales Koordinatensystem 
+ * repraesentiert werden. Ausser den horizontalen und vertikalen Nachbarfeldern werden
+ * die Felder auf EINER der beiden Diagonalen als Nachbarn betrachtet. (Siehe Klasse Vektor)
+ * So erhaelt man zu jedem inneren Spielfeld die sechs Nachbarn, die es auch auf dem 
+ * echten Spielfeld gibt.
+ * 
+ * Das Array, das das Spielfeld repraesentiert hat bei den Indizes 0 und 10 Rand-Felder, die 
+ * nicht mehr zum regulaeren Spielfeld gehoeren. Damit werden im Prinzip die Konventionen 
+ * eingehalten, die in https://de.wikipedia.org/wiki/Abalone_(Spiel)#Notation besprochen
+ * werden, wenn man die Zeilen A bis I mit den Zeilennummer 1 bis 9 identifiziert.
  * 
  * @author Heiko Dudzus
  * @version 2016-07-11
  */
 public class Spiel implements Zustand
 {
-    // instance variables - replace the example below with your own
     private Feld[][] spielfeld;
     private List<Spieler> spielerListe;
+    
+    // fuer Testzwecke: erlaubte Verschiebungen
     public Vektor rechtsOben = new Vektor(1,1);
     public Vektor linksUnten = new Vektor(-1,-1);
     public Vektor hoch = new Vektor (0,1);
@@ -26,27 +39,27 @@ public class Spiel implements Zustand
         spielerListe = new List<Spieler>();
         spielerListe.append(pSpieler1);
         spielerListe.append(pSpieler2);
-
+        
+        // Felder erzeugen und in Array verwalten
         for (int zeile = 0; zeile < 11; zeile++) {
             for (int spalte = 0; spalte < 11; spalte++) {
                 spielfeld[zeile][spalte] = new Feld();
             }
         }
-
+        
+        // Startpositionen belegen
         for (int spalte = 1; spalte <=5; spalte++) {
             spielfeld[1][spalte].setzeStein(new Stein(pSpieler1));
             spielfeld[9][10-spalte].setzeStein(new Stein(pSpieler2));
             pSpieler1.erhalteStein();
             pSpieler2.erhalteStein();
         }
-
         for (int spalte = 1; spalte <=6; spalte++) {
             spielfeld[2][spalte].setzeStein(new Stein(pSpieler1));
             spielfeld[8][10-spalte].setzeStein(new Stein(pSpieler2));
             pSpieler1.erhalteStein();
             pSpieler2.erhalteStein();
         }
-
         for (int spalte = 3; spalte <=5; spalte++) {
             spielfeld[3][spalte].setzeStein(new Stein(pSpieler1));
             spielfeld[7][10-spalte].setzeStein(new Stein(pSpieler2));
@@ -197,6 +210,9 @@ public class Spiel implements Zustand
         return in;
     }
 
+    /**
+     * Erzeugt einen String, der das aktuelle Spielfeld darstellt.
+     */
     public String toString() {
         String out = "";
         for (int zeile = 9; zeile > 0; zeile--) {
@@ -217,6 +233,9 @@ public class Spiel implements Zustand
         return out;
     }
 
+    /**
+     * Druckt das aktuelle Spielfeld auf der Konsole aus
+     */
     public void toConsole() {
         System.out.print(toString());
     }

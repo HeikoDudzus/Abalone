@@ -16,14 +16,14 @@ public class Testklasse
     private Spieler spieler1;
     private Spieler spieler2;
     private Spiel spiel1;
-    private Spiel.Vektor v;
-    private Spiel.Vektor runter;
-    private Spiel.Vektor rechtsOben;
-    private Spiel.Vektor linksUnten;
-    private Spiel.Vektor hoch;
-    private Spiel.Vektor runter2;
-    private Spiel.Vektor rechts;
-    private Spiel.Vektor links;
+    private Vektor v;
+    private Vektor runter;
+    private Vektor rechtsOben;
+    private Vektor linksUnten;
+    private Vektor hoch;
+    private Vektor runter2;
+    private Vektor rechts;
+    private Vektor links;
 
     
     
