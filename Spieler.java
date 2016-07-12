@@ -2,8 +2,8 @@
 /**
  * Write a description of class Spieler here.
  * 
- * @author (your name) 
- * @version (a version number or a date)
+ * @author Heiko Dudzus
+ * @version 2016-07-12
  */
 public class Spieler implements Zustand
 {
@@ -45,10 +45,6 @@ public class Spieler implements Zustand
         return name;
     }
     
-    //     public int gibAnzahlSteine() {
-    //         return anzahlSteine;
-    //     }
-    
     public boolean hatVerloren() {
         return anzahlSteine < 9;
     }
@@ -60,22 +56,4 @@ public class Spieler implements Zustand
     public void gibSteinAb() {
         anzahlSteine--;
     }
-    //     private void setzeStein (Stein pStein) {
-    //         
-    //     }
-    //     
-    //     public void entferneStein(Stein pStein) {
-    //         steine.toFirst();
-    //         while (steine.hasAccess()) {
-    //             if (steine.getContent() == pStein) {
-    //                 steine.remove();
-    //                 anzahlSteine--;
-    //             }
-    //             steine.next();
-    //         }
-    //     }
-    //     
-    //     public int gibAnzahlSteine() {
-    //         return anzahlSteine;
-    //     }
 }

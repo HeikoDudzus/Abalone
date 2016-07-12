@@ -2,8 +2,8 @@
 /**
  * Write a description of class Stein here.
  * 
- * @author (your name) 
- * @version (a version number or a date)
+ * @author Heiko Dudzus
+ * @version 2016-07-12
  */
 public class Stein
 {
