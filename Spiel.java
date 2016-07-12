@@ -54,7 +54,16 @@ public class Spiel implements Zustand
             pSpieler2.erhalteStein();
         }
     }
-
+    
+    /**
+     * Wrapper fuer die Methode schiebeRekursiv(). Es wird eine Verschiebung an gegebener 
+     * Position in eine gegebene Richtung angefragt.
+     * @param pZeile Zeilennummer des Spielfeldes
+     * @param pSpalte Spaltennummer des Spielfeldes
+     * @param pRichtung Richtungsvektor der Verschiebung
+     * @param pSpieler Spieler, der den Spielzug ausfuehren moechte
+     * @return Wahrheitswert, ob die geplante Verschiebung durchgefuehrt werden kann
+     */
     public boolean schiebe (int pZeile, int pSpalte, Vektor pRichtung, Spieler pSpieler) {
         if (!pRichtung.richtungErlaubt()) return false;
         Stein stein = spielfeld[pZeile][pSpalte].gibStein();
@@ -68,7 +77,20 @@ public class Spiel implements Zustand
             return false;
         }
     }
-
+    
+    /**
+     * Es wird versucht, Steine auf der angegebenen Spielfeld-Position werden rekursiv in
+     * die angegebene Richtung zu verschieben. Im Erfolgsfall wird nach dem Verschieben
+     * der uebergebene Stein auf dem Feld platziert.
+     * @param pZeile Zeilennummer des Spielfeldes
+     * @param pSpalte Spaltennummer des Spielfeldes
+     * @param pRichtung Richtungsvektor der Verschiebung
+     * @param pSpieler Spieler, der den Spielzug ausfuehren moechte
+     * @param pEigene Anzahl der bisher von der geplanten Verschiebung betroffenen eigenen Steine
+     * @param pAndere Anzahl der bisher von der geplanten Verschiebung betroffenen fremden Steine
+     * @param pStein Stein, der im Erfolgsfall hier abgelegt wird
+     * @return Wahrheitswert, ob die geplante Verschiebung durchgefuehrt werden kann
+     */
     private boolean schiebeRekursiv (int pZeile, int pSpalte, Vektor pRichtung,
     Spieler pSpieler, int pEigene, int pAndere, Stein pStein) {
         if (!imFeld(pZeile,pSpalte)) {
@@ -120,84 +142,22 @@ public class Spiel implements Zustand
             return true;
         }
     }
-
-    //     public boolean schiebeStein (int pZeile, int pSpalte, Vektor pRichtung) {
-    //         Stein stein = spielfeld[pZeile][pSpalte].gibStein();
-    //         if (stein == null) return false;
-    //         Spieler spieler = stein.gibBesitzer();
-    //         //Zaehlung
-    //         ErgebnisZaehlung ergebnis = zaehleSteineInRichtung(pZeile,pSpalte, pRichtung ,spieler);
-    //         // Auswertung der Zaehlung
-    //         int anzahlEigenerSteine = ergebnis.gibAnzahlEigenerSteine();
-    //         int anzahlGegnerischerSteine = ergebnis.gibAnzahlGegnerischerSteine();
-    //         boolean einFeldFrei = ergebnis.gibFeldFrei();
-    // 
-    //         // Bedingungen fuer Zug pruefen
-    //         if (!einFeldFrei || anzahlEigenerSteine == 0) return false;
-    //         if (anzahlEigenerSteine > 3) return false;
-    //         if (anzahlEigenerSteine < anzahlGegnerischerSteine) return false;
-    // 
-    //         // Zug durchfuehren
-    //         int zeile = pZeile;
-    //         int spalte = pSpalte;
-    //         int dx = pRichtung.gibX();
-    //         int dy = pRichtung.gibY();
-    //         spielfeld[zeile][spalte].setzeStein(null);
-    // 
-    //         // Steine verschieben
-    //         while (stein != null) {
-    //             zeile += dy;
-    //             spalte += dx;
-    //             Stein tmp = spielfeld[zeile][spalte].gibStein();
-    //             // kontrollieren, ob der Stein aus dem Spiel gefallen ist
-    //             if (!imFeld(zeile,spalte)) {
-    //                 spielfeld[zeile][spalte].setzeStein(null);
-    //                 Spieler sp = stein.gibBesitzer();
-    //                 sp.gibSteinAb();
-    //                 if (sp.hatVerloren()) beendeSpiel(sp);
-    //             } else {
-    //                 spielfeld[zeile][spalte].setzeStein(stein);
-    //             }
-    //             stein = tmp;
-    //         }
-    //         return true;
-    //     }
-
+    
+    /**
+     * Beendet das Spiel
+     * @param pSpieler Der Spieler, der als Verlierer das Spiel beendet
+     */
     private void beendeSpiel(Spieler pSpieler) {
         System.out.println("" + pSpieler.gibName() + " hat verloren");
         // Im Serverbetrieb geschieht hier noch viel mehr... Spielerstatus etc
     }
-
-    //     private ErgebnisZaehlung zaehleSteineInRichtung(int pZeile, int pSpalte, 
-    //     Vektor pRichtung, Spieler pSpieler) {
-    //         int eigene = 0;
-    //         int gegnerische = 0;
-    //         boolean frei = false;
-    //         if (!pRichtung.richtungErlaubt()) return new ErgebnisZaehlung(eigene,gegnerische,frei);
-    //         int zeile = pZeile;
-    //         int spalte = pSpalte;
-    //         int dx = pRichtung.gibX();
-    //         int dy = pRichtung.gibY();
-    //         Stein stein = spielfeld[zeile][spalte].gibStein();
-    // 
-    //         while (imFeld(zeile, spalte) && stein != null && stein.gibBesitzer() == pSpieler) {
-    //             eigene++;
-    //             zeile += dy;
-    //             spalte += dx;
-    //             stein = spielfeld[zeile][spalte].gibStein();
-    //         }
-    // 
-    //         while (imFeld(zeile,spalte) && stein != null && stein.gibBesitzer() != pSpieler) {
-    //             gegnerische++;
-    //             zeile += dy;
-    //             spalte += dx;
-    //             stein = spielfeld[zeile][spalte].gibStein();
-    //         }
-    // 
-    //         if (stein == null) frei = true;
-    //         return new ErgebnisZaehlung(eigene, gegnerische, frei);
-    //     }
-
+    
+    /**
+     * Prueft, ob eine gegebene Position innerhalb des gueltigen Spielfeldes ist.
+     * @param y Zeilennummer des zu pruefenden Feldes
+     * @param x Spaltennummer des zu pruefenden Feldes
+     * @return Wahrheitswert, ob an der Position ein gueltiges Spielfeld ist
+     */
     private boolean imFeld(int y, int x) {
         /*
         Es gibt 6 Spielfeldraender, also 6 Bedingungen
@@ -297,29 +257,4 @@ public class Spiel implements Zustand
             return true;
         }
     }
-
-    //     public class ErgebnisZaehlung {
-    //         private int anzahlEigeneSteine;
-    //         private int anzahlGegnerSteine;
-    //         private boolean feldFrei;
-    // 
-    //         ErgebnisZaehlung (int pEigene, int pGegnerische, boolean pFrei) 
-    //         {
-    //             anzahlEigeneSteine = pEigene;
-    //             anzahlGegnerSteine = pGegnerische;
-    //             feldFrei = pFrei;
-    //         }
-    // 
-    //         public int gibAnzahlEigenerSteine() {
-    //             return anzahlEigeneSteine;
-    //         }
-    // 
-    //         public int gibAnzahlGegnerischerSteine() {
-    //             return anzahlGegnerSteine;
-    //         }
-    // 
-    //         public boolean gibFeldFrei() {
-    //             return feldFrei;
-    //         }
-    //     }
 }
