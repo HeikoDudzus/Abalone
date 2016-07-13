@@ -1,5 +1,5 @@
 # Abalone
-Das Projektist im Aufbau. Ausprobieren kann man es mit BlueJ. Die package.bluej ist in der gitignore-Datei.
+Das Projekt ist im Aufbau und ihne BlueJ noch nicht kompilierbar. Ausprobieren kann man es mit BlueJ. Die package.bluej ist in der gitignore-Datei.
 
 1) leere package.bluej im lokalen Verzeichnis anlegen
 2) als BlueJ-Projekt starten
