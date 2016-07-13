@@ -175,7 +175,8 @@ public class GameServer extends Server implements Zustand
                     bis = new Position(bisSpalte, bisZeile);
                     richtung = new Vektor(bisSpalte, bisZeile, nachSpalte, nachZeile);
                 } catch (Exception e) {
-                    System.out.println("Konnte keine Integer parsen!");
+                    //System.out.println("Konnte keine Integer parsen!");
+                    send(clientIP, clientPort, "Die Eingaben waren ungültig");
                     validInt = false;
                 }
                 if (s != null && validInt) {
@@ -199,7 +200,7 @@ public class GameServer extends Server implements Zustand
                             send(clientIP, clientPort, "+WON");
                             registriereGewinnerInDB(pClient);
                             pClient.setzeZustand(OVER);
-                            try {
+                            try {  // braucht man diesen Try-Catch-Block wirklich?
                                 send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+LOST");
                                 gegenspieler.setzeZustand(OVER);
                             } catch (Exception e) {

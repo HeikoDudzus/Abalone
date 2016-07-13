@@ -219,7 +219,7 @@ public class Spiel implements Zustand
         verlierer = pSpieler;
         gewinner = gibGegenspieler(pSpieler);
     }
-
+    
     /**
      * Prueft, ob eine gegebene Position innerhalb des gueltigen Spielfeldes ist.
      * @param y Zeilennummer des zu pruefenden Feldes
@@ -298,7 +298,7 @@ public class Spiel implements Zustand
     }
 
     /*
-     * Netzwerk-Methoden fuer Netzwerkspiele
+     * Netzwerk-Methoden fuer Netzwerkspiele zu zweit
      */
     public Spieler gibGegenspieler(Spieler pSpieler) {
         spielerListe.toFirst();
