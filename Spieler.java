@@ -9,6 +9,8 @@ public class Spieler implements Zustand
 {
     // instance variables - replace the example below with your own
     private String name;
+    private String ip;
+    private int port;
     private int zustand;
     private char symbol;
     private int anzahlSteine;
@@ -17,32 +19,48 @@ public class Spieler implements Zustand
     /**
      * Constructor for objects of class Spieler
      */
-    public Spieler(String pName)
+    public Spieler(String pIP, int pPort)
     {
-        name = pName;
-        zustand = WAIT;
+        ip = pIP;
+        port = pPort;
         anzahlSteine = 0;
-        //steineListe = new List<Stein>();
+    }
+    
+    public String gibIP(){
+        return ip;
     }
 
+    public int gibPort(){
+        return port;
+    }
+    
+    public boolean vergleicheIPUndPort(String pIP, int pPort) {
+        return (this.ip.equals(pIP) && this.port == pPort);
+    }
+    
+    public String gibName()
+    {
+        return name;
+    }
+    
+    public void setzeName(String pName){
+        this.name = pName;
+    }
+    
+     public int gibZustand() {
+        return zustand;
+    }
+    
+    public void setzeZustand(int pZustand){
+        this.zustand = pZustand;
+    }
+    
     public char gibSymbol() {
         return symbol;
     }
 
     public void setzeSymbol(char pSymbol) {
         symbol = pSymbol;
-    }
-
-    public int gibZustand() {
-        return zustand;
-    }
-
-    public void setzeZustand(int pZustand) {
-        zustand = pZustand;
-    }
-    
-    public String gibName() {
-        return name;
     }
     
     public boolean hatVerloren() {

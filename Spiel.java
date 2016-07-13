@@ -21,7 +21,10 @@ public class Spiel implements Zustand
 {
     private Feld[][] spielfeld;
     private List<Spieler> spielerListe;
-    
+    private Spieler gewinner;
+    private Spieler verlierer;
+    private boolean spielLaeuft;
+
     // fuer Testzwecke: erlaubte Verschiebungen
     public Vektor rechtsOben = new Vektor(1,1);
     public Vektor linksUnten = new Vektor(-1,-1);
@@ -39,14 +42,16 @@ public class Spiel implements Zustand
         spielerListe = new List<Spieler>();
         spielerListe.append(pSpieler1);
         spielerListe.append(pSpieler2);
-        
+
+        spielLaeuft = true;
+
         // Felder erzeugen und in Array verwalten
         for (int zeile = 0; zeile < 11; zeile++) {
             for (int spalte = 0; spalte < 11; spalte++) {
                 spielfeld[zeile][spalte] = new Feld();
             }
         }
-        
+
         // Startpositionen belegen
         for (int spalte = 1; spalte <=5; spalte++) {
             spielfeld[1][spalte].setzeStein(new Stein(pSpieler1));
@@ -67,7 +72,51 @@ public class Spiel implements Zustand
             pSpieler2.erhalteStein();
         }
     }
-    
+
+    public boolean schiebe(Position pGrundseite1, Position pGrundseite2, Vektor pRichtung,
+    Spieler pSpieler) {
+        if (!pRichtung.richtungErlaubt()) return false;
+        Vektor grundseitenVektor = new Vektor(pGrundseite1, pGrundseite2);
+        if (grundseitenVektor.laenge() > 2) return false; // zu viele Steine ausgewaehlt!
+
+        // Laengszug oder Querzug?
+        if (grundseitenVektor.linearAbhaengig(pRichtung)) {
+            // Laengszug
+            if (grundseitenVektor.skalarprodukt(pRichtung) < 0) {
+                //Fuer die Verschiebung muss am Stein an Position pGrundseite2
+                // angesetzt werden.
+                return laengszug(pGrundseite2, pRichtung, pSpieler);
+            } else {
+                //Fuer die Verschiebung muss am Stein an Position pGrundseite1
+                // angesetzt werden.
+                return laengszug(pGrundseite1, pRichtung, pSpieler);
+            }
+        } else {
+            // Querzug
+            // Wieviele Steine sollen verschoben werden?
+            int anzahl = grundseitenVektor.laenge() + 1;
+            if (anzahl == 1) {
+                return laengszug(pGrundseite1,pRichtung,pSpieler);
+            } else if (anzahl == 2) {
+                boolean status1 = laengszug(pGrundseite1,pRichtung,pSpieler);
+                boolean status2 = laengszug(pGrundseite2,pRichtung,pSpieler);
+                return status1 | status2;
+            } else if (anzahl == 3){
+                int x1 = pGrundseite1.gibX();
+                int y1 = pGrundseite1.gibY();
+                int x2 = pGrundseite2.gibX();
+                int y2 = pGrundseite2.gibY();
+                Position mitte = new Position((x1+x2)/2, (y1+y2)/2);
+                boolean status1 = laengszug(pGrundseite1,pRichtung, pSpieler);
+                boolean status2 = laengszug(pGrundseite2,pRichtung, pSpieler);
+                boolean status3 = laengszug(mitte,pRichtung, pSpieler);
+                return status1 | status2 | status3;
+            } else {
+                return false;
+            }
+        }
+    }
+
     /**
      * Wrapper fuer die Methode schiebeRekursiv(). Es wird eine Verschiebung an gegebener 
      * Position in eine gegebene Richtung angefragt.
@@ -77,24 +126,27 @@ public class Spiel implements Zustand
      * @param pSpieler Spieler, der den Spielzug ausfuehren moechte
      * @return Wahrheitswert, ob die geplante Verschiebung durchgefuehrt werden kann
      */
-    public boolean schiebe (int pZeile, int pSpalte, Vektor pRichtung, Spieler pSpieler) {
+    public boolean laengszug(Position pPos, Vektor pRichtung, Spieler pSpieler) {
+        int zeile = pPos.gibY();
+        int spalte = pPos.gibX();
         if (!pRichtung.richtungErlaubt()) return false;
-        Stein stein = spielfeld[pZeile][pSpalte].gibStein();
+        Stein stein = spielfeld[zeile][spalte].gibStein();
         if (stein == null) return false;
         if (stein.gibBesitzer() != pSpieler) return false;
-        if (schiebeRekursiv(pZeile, pSpalte, pRichtung, pSpieler, 0, 0, stein)) {
+        if (schiebeRekursiv(zeile, spalte, pRichtung, pSpieler, 0, 0, stein)) {
             // Der Stein konnte verschoben werden, entferne ihn hier
-            spielfeld[pZeile][pSpalte].setzeStein(null);
+            spielfeld[zeile][spalte].setzeStein(null);
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Es wird versucht, Steine auf der angegebenen Spielfeld-Position werden rekursiv in
-     * die angegebene Richtung zu verschieben. Im Erfolgsfall wird nach dem Verschieben
-     * der uebergebene Stein auf dem Feld platziert.
+     * die angegebene Richtung zu verschieben. Bedingungen:
+     * Vgl.: https://de.wikipedia.org/wiki/Abalone_(Spiel)#Z.C3.BCge
+     * Im Erfolgsfall wird nach dem Verschieben der uebergebene Stein auf dem Feld platziert.
      * @param pZeile Zeilennummer des Spielfeldes
      * @param pSpalte Spaltennummer des Spielfeldes
      * @param pRichtung Richtungsvektor der Verschiebung
@@ -155,7 +207,7 @@ public class Spiel implements Zustand
             return true;
         }
     }
-    
+
     /**
      * Beendet das Spiel
      * @param pSpieler Der Spieler, der als Verlierer das Spiel beendet
@@ -163,8 +215,11 @@ public class Spiel implements Zustand
     private void beendeSpiel(Spieler pSpieler) {
         System.out.println("" + pSpieler.gibName() + " hat verloren");
         // Im Serverbetrieb geschieht hier noch viel mehr... Spielerstatus etc
+        spielLaeuft = false;
+        verlierer = pSpieler;
+        gewinner = gibGegenspieler(pSpieler);
     }
-    
+
     /**
      * Prueft, ob eine gegebene Position innerhalb des gueltigen Spielfeldes ist.
      * @param y Zeilennummer des zu pruefenden Feldes
@@ -216,6 +271,7 @@ public class Spiel implements Zustand
     public String toString() {
         String out = "";
         for (int zeile = 9; zeile > 0; zeile--) {
+            out += "" + zeile + "  " + (char) ('A' - 1 +zeile) + "  ";
             for (int spalte = 1; spalte < 10; spalte++) {
                 Stein stein = spielfeld[zeile][spalte].gibStein();
                 if (stein == null) {
@@ -230,6 +286,7 @@ public class Spiel implements Zustand
             }
             out += "\n";
         }
+        out += "      1 2 3 4 5 6 7 8 9";
         return out;
     }
 
@@ -238,5 +295,39 @@ public class Spiel implements Zustand
      */
     public void toConsole() {
         System.out.print(toString());
+    }
+
+    /*
+     * Netzwerk-Methoden fuer Netzwerkspiele
+     */
+    public Spieler gibGegenspieler(Spieler pSpieler) {
+        spielerListe.toFirst();
+        while (spielerListe.hasAccess()) {
+            Spieler s = spielerListe.getContent();
+            if (pSpieler != s) return s;
+            spielerListe.next();
+        }
+        return null;
+    }
+
+    public void loescheSpieler(Spieler pClient) {
+        spielerListe.toFirst();
+        while (spielerListe.hasAccess()) {
+            if (pClient == spielerListe.getContent()) spielerListe.remove();
+            spielerListe.next();
+        }
+    }
+
+    public boolean pruefeSpieler(Spieler pSpieler) {
+        spielerListe.toFirst();
+        while (spielerListe.hasAccess()) {
+            if (pSpieler == spielerListe.getContent()) return true;
+            spielerListe.next();
+        }
+        return false;
+    }
+
+    public boolean beideSpielerWeg() {
+        return spielerListe.isEmpty();
     }
 }
