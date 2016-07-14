@@ -233,14 +233,14 @@ public class Spiel implements Zustand
 
         |      I  O O O O O
         |     H  O O O O O O
-        |    G  � � O O O � � 
-        |   F  � � � � � � � � 
-        |  E  � � � � � � � � � 
-        |   D  � � � � � � � � 9
-        |    C  � � X X X � � 8
-        |     B  X X X X X X 7
-        |      A  X X X X X 6
-        |          1 2 3 4 5
+        |    G  . . O O O . . 
+        |   F  . . . . . . . . 
+        |  E  . . . . . . . . . 
+        |   D  . . . . . . . .  9
+        |    C  . . X X X . .  8
+        |     B  X X X X X X  7
+        |      A  X X X X X  6
+        |          1 2 3 4  5
 
         orthogonalisiert:
 
