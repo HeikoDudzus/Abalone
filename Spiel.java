@@ -233,11 +233,11 @@ public class Spiel implements Zustand
 
         |      I  O O O O O
         |     H  O O O O O O
-        |    G  · · O O O · · 
-        |   F  · · · · · · · · 
-        |  E  · · · · · · · · · 
-        |   D  · · · · · · · · 9
-        |    C  · · X X X · · 8
+        |    G  ï¿½ ï¿½ O O O ï¿½ ï¿½ 
+        |   F  ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ 
+        |  E  ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ 
+        |   D  ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ ï¿½ 9
+        |    C  ï¿½ ï¿½ X X X ï¿½ ï¿½ 8
         |     B  X X X X X X 7
         |      A  X X X X X 6
         |          1 2 3 4 5
@@ -261,7 +261,7 @@ public class Spiel implements Zustand
         if (y < 1) in = false;
         if (y > 9) in = false;
         if (y <= x - 5) in = false;
-        if (y > x + 5) in = false;
+        if (y >= x + 5) in = false;
         return in;
     }
 
@@ -286,7 +286,7 @@ public class Spiel implements Zustand
             }
             out += "\n";
         }
-        out += "      1 2 3 4 5 6 7 8 9";
+        out += "      1 2 3 4 5 6 7 8 9\n";
         return out;
     }
 
