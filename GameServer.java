@@ -194,7 +194,7 @@ public class GameServer extends Server implements Zustand
                         gegenspieler.setzeZustand(ACTIVE);
                         
                         
-                        
+                        // Das ist noch nicht schoen!
                         
                         if (gegenspieler.hatVerloren()) {
                             send(clientIP, clientPort, "+WON");
@@ -207,8 +207,19 @@ public class GameServer extends Server implements Zustand
                                 System.out.println("Gegenspieler nicht mehr vorhanden!");
                             }
                         }
+                        // Auch eigene Kugeln können über den Rand gefallen sein!
                         
-                        
+                         if (gegenspieler.hatVerloren()) {
+                            send(clientIP, clientPort, "+LOST");
+                            registriereGewinnerInDB(pClient);
+                            pClient.setzeZustand(OVER);
+                            try {  // braucht man diesen Try-Catch-Block wirklich?
+                                send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+WON");
+                                gegenspieler.setzeZustand(OVER);
+                            } catch (Exception e) {
+                                System.out.println("Gegenspieler nicht mehr vorhanden!");
+                            }
+                        }
                         
                         
                         
