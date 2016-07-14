@@ -7,4 +7,4 @@ Ausprobieren kann man es mit BlueJ:
 3) bei Testklasse "Text fixture to Object bench" wählen
 4) Rechtsklick auf Spiel-Objekt, dort erst toConsole() ausprobieren, dann schiebe()-Methoden
 
-Zur Information: Die package.bluej ist in mittels gitignore-Datei ausgeschlossen.
+Zur Information: Die package.bluej ist mittels gitignore-Datei ausgeschlossen.
