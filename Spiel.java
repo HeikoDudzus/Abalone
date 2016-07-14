@@ -261,7 +261,7 @@ public class Spiel implements Zustand
         if (y < 1) in = false;
         if (y > 9) in = false;
         if (y <= x - 5) in = false;
-        if (y >= x + 5) in = false;
+        if (y > x + 5) in = false;
         return in;
     }
 
