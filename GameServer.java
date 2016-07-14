@@ -1,4 +1,3 @@
- 
 
 /**
  * Klasse GameServer.
@@ -115,7 +114,7 @@ public class GameServer extends Server implements Zustand
             send(clientIP, clientPort, "ERR unknown command");
         }
     }
-    
+
     /**
      * Nachricht eines passiven Spielers wird verarbeitet.
      * @param pClient anfragender Spieler
@@ -143,7 +142,7 @@ public class GameServer extends Server implements Zustand
             send(clientIP, clientPort, "ERR it is not your turn");
         }
     }
-    
+
     /**
      * Nachricht des Spielers, der am Zug ist, wird verarbeitet.
      * @param pClient anfragender Spieler
@@ -192,37 +191,32 @@ public class GameServer extends Server implements Zustand
                         send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+ACTIVE");
                         send(gegenspieler.gibIP(), gegenspieler.gibPort(), s.toString());
                         gegenspieler.setzeZustand(ACTIVE);
-                        
-                        
-                        // Das ist noch nicht schoen!
-                        
+                        /* 
+                         * Beim Zug koennten gegenrische Kugeln ueber den Rand gefallen sein
+                         */
                         if (gegenspieler.hatVerloren()) {
-                            send(clientIP, clientPort, "+WON");
-                            registriereGewinnerInDB(pClient);
                             pClient.setzeZustand(OVER);
+                            gegenspieler.setzeZustand(OVER);
+                            send(clientIP, clientPort, "+WON");
                             try {  // braucht man diesen Try-Catch-Block wirklich?
                                 send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+LOST");
-                                gegenspieler.setzeZustand(OVER);
                             } catch (Exception e) {
                                 System.out.println("Gegenspieler nicht mehr vorhanden!");
                             }
                         }
-                        // Auch eigene Kugeln können über den Rand gefallen sein!
-                        
-                         if (gegenspieler.hatVerloren()) {
-                            send(clientIP, clientPort, "+LOST");
-                            registriereGewinnerInDB(pClient);
+                        /* 
+                         * Auch eigene Kugeln können über den Rand gefallen sein!
+                         */ 
+                        if (pClient.hatVerloren()) {
                             pClient.setzeZustand(OVER);
+                            gegenspieler.setzeZustand(OVER);
+                            send(clientIP, clientPort, "+LOST");
                             try {  // braucht man diesen Try-Catch-Block wirklich?
                                 send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+WON");
-                                gegenspieler.setzeZustand(OVER);
                             } catch (Exception e) {
                                 System.out.println("Gegenspieler nicht mehr vorhanden!");
                             }
                         }
-                        
-                        
-                        
                     } else {
                         send(clientIP, clientPort, "move not possible");
                     }
@@ -281,7 +275,7 @@ public class GameServer extends Server implements Zustand
             send(pClient.gibIP(), pClient.gibPort(), "ERR unknown command");
         }
     }
-    
+
     /**
      * Ein Spiel wird aus der Liste aller aktuelle Spiele entfernt.
      * @param pSpiel das zu entfernende Spiel
@@ -293,7 +287,7 @@ public class GameServer extends Server implements Zustand
             spiele.next();
         }
     }
-    
+
     /**
      * Ein Spieler wird aus der Spielerliste entfernt.
      * @param der zu entfernende Spieler
@@ -383,7 +377,7 @@ public class GameServer extends Server implements Zustand
             registriereSpielInDB(spieler1, spieler2);
         }
     }
-    
+
     /**
      * Zu einem gegebenen Spieler wird das derzeit gespielte Spiel gesucht.
      * @param pSpieler Der gegebene Spieler
@@ -429,7 +423,7 @@ public class GameServer extends Server implements Zustand
      */
     private void registriereGewinnerInDB(Spieler pSpieler) {
     }
-    
+
     /**
      * Ein begonnenes Spiel wird in der Datenbank registriert.
      * @param pSpieler1 erster Spieler
@@ -443,4 +437,4 @@ public class GameServer extends Server implements Zustand
     public void send(String pClientIP, int pClientPort, String pMessage){
     super.send(pClientIP,pClientPort,pMessage+"\r");
     } */
-    }
+}
