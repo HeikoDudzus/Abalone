@@ -73,6 +73,10 @@ public class Spiel implements Zustand
         }
     }
 
+    /**
+     * schiebe schiebt die durch die beiden Positionen beschriebenen Steine des pSpielers in 
+     * die durch den Vektor pRichtung angegebene Richtung
+     */
     public boolean schiebe(Position pGrundseite1, Position pGrundseite2, Vektor pRichtung,
     Spieler pSpieler) {
         if (!pRichtung.richtungErlaubt()) return false;
@@ -118,7 +122,8 @@ public class Spiel implements Zustand
     }
 
     /**
-     * Wrapper fuer die Methode schiebeRekursiv(). Es wird eine Verschiebung an gegebener 
+     * Wrapper fuer die Methode schiebeRekursiv(). 
+     * Es wird eine Verschiebung an gegebener 
      * Position in eine gegebene Richtung angefragt.
      * @param pZeile Zeilennummer des Spielfeldes
      * @param pSpalte Spaltennummer des Spielfeldes
@@ -219,7 +224,7 @@ public class Spiel implements Zustand
         verlierer = pSpieler;
         gewinner = gibGegenspieler(pSpieler);
     }
-    
+
     /**
      * Prueft, ob eine gegebene Position innerhalb des gueltigen Spielfeldes ist.
      * @param y Zeilennummer des zu pruefenden Feldes
@@ -291,6 +296,29 @@ public class Spiel implements Zustand
     }
 
     /**
+     * Erzeugt ein int-Array, das das aktuelle Spielfeld darstellt.
+     */
+    public int[][] toIntegerArray() {
+        int[][] result = new int[11][11];
+        spielerListe.toFirst();
+        for (int zeile = 9; zeile > 0; zeile--) {
+            for (int spalte = 1; spalte < 10; spalte++) {
+                Stein stein = spielfeld[zeile][spalte].gibStein();
+                if (stein == null) {
+                    result[10-zeile][spalte]=0;
+                } else {
+                    if (stein.gibBesitzer() == spielerListe.getContent()) {
+                        result[10-zeile][spalte]=1;
+                    } else {
+                        result[10-zeile][spalte]=2;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Druckt das aktuelle Spielfeld auf der Konsole aus
      */
     public void toConsole() {
@@ -330,4 +358,19 @@ public class Spiel implements Zustand
     public boolean beideSpielerWeg() {
         return spielerListe.isEmpty();
     }
+
+    public Spieler gibSpielerNr(int pNr) {
+        spielerListe.toFirst();
+        int i=1;
+        while(spielerListe.hasAccess()) {
+            if (i==pNr) {
+                return spielerListe.getContent();
+            } else {
+                i++;
+                spielerListe.next();
+            }
+        }
+        return null;
+    }
+
 }

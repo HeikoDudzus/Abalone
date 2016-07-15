@@ -1,4 +1,3 @@
- 
 
 import java.awt.*;
 import java.awt.event.*;
@@ -14,6 +13,10 @@ public class SpielfeldPanel extends JPanel implements MouseListener
 {
     private int[][] spielfeld = new int[11][11];
     private int[][] markierungen = new int[11][11];
+    private Position pos1 = new Position(1,2);
+    private Position pos2 = new Position(2,3);
+    private Position pos3 = new Position(3,4);
+    private int zustandPositionsClick = 0; // 0 noch nichts, 1 pos1 gewählt, 2 pos3 gewählt
 
     /**
      * Konstruktor fuer Objekte der Klasse SpielfeldPanel
@@ -43,6 +46,14 @@ public class SpielfeldPanel extends JPanel implements MouseListener
                 if (i+j>5 && i+j<=14) {
                     if(markierungen[i][j]==1) {
                         g.setColor(Color.blue);
+                        g.fillOval(bmx+(i-1)*2*r+(j-1)*r,bmy+(int)((double)(j-1)*Math.sqrt(3)*(double)r),2*r,2*r); 
+                    }
+                    if(markierungen[i][j]==2) {
+                        g.setColor(Color.red);
+                        g.fillOval(bmx+(i-1)*2*r+(j-1)*r,bmy+(int)((double)(j-1)*Math.sqrt(3)*(double)r),2*r,2*r); 
+                    }
+                    if(markierungen[i][j]==3) {
+                        g.setColor(Color.yellow);
                         g.fillOval(bmx+(i-1)*2*r+(j-1)*r,bmy+(int)((double)(j-1)*Math.sqrt(3)*(double)r),2*r,2*r); 
                     }
                     switch (spielfeld[j][i]) {
@@ -81,10 +92,23 @@ public class SpielfeldPanel extends JPanel implements MouseListener
         this.repaint();
     }
 
+    /**
+     * Falls ein Zug ausgewaehlt werden die drei Positionen zu diesem zurueckgegeben
+     * ansonsten null
+     */
+    public Position[] gibZug() {
+        if (zustandPositionsClick == 3) {
+            return new Position[] {pos1, pos2, pos3};
+        } else {
+            return null;
+        }
+    }
+
     public void mouseExited(java.awt.event.MouseEvent e) {
     }
 
-    public void mouseEntered(java.awt.event.MouseEvent e) {
+    public void mouseEntered(java.awt.event.MouseEvent evt) {
+        System.out.println("Entered: "+evt.getX()+", "+evt.getY());
     }
 
     public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -107,7 +131,42 @@ public class SpielfeldPanel extends JPanel implements MouseListener
         System.out.println("a:"+a);
         System.out.println("x: "+Math.round(a)+" y: "+Math.round(b));
 
-        markierungen[xpos+1][ypos+1]=1-markierungen[xpos+1][ypos+1];
+        switch(zustandPositionsClick) {
+            case 0: //noch keine Wahl erfolgt
+            if (spielfeld[ypos+1][xpos+1]!=0) { //dort liegt eine Kugel - AChtung Tausch!!
+                markierungen[xpos+1][ypos+1]=1;
+                pos1 = new Position(xpos+1,9-ypos);
+                zustandPositionsClick++;
+            }
+            break;
+            case 1: //basisFeld schon gewählt
+            markierungen[xpos+1][ypos+1]=2;
+            pos2 = new Position(xpos+1,9-ypos );
+            zustandPositionsClick++;
+            break;
+            case 2: //Reihe schon gewählt
+            if (markierungen[xpos+1][ypos+1]==1) {
+                markierungen[pos1.gibX()][10-pos1.gibY()]=0;
+                markierungen[pos2.gibX()][10-pos2.gibY()]=0;
+                zustandPositionsClick=0;
+            } else {
+                markierungen[xpos+1][ypos+1]=3;
+                pos3 = new Position(xpos+1,9-ypos );
+                zustandPositionsClick++;
+            }
+            break;
+            default:
+            markierungen[pos1.gibX()][10-pos1.gibY()]=0;
+            markierungen[pos2.gibX()][10-pos2.gibY()]=0;
+            markierungen[pos3.gibX()][10-pos3.gibY()]=0;
+            zustandPositionsClick=0;
+            break;
+        }
+        System.out.println("ZustandPositionsClick:"+zustandPositionsClick);
+        System.out.println("Position1: "+pos1.gibX()+", "+pos1.gibY());
+        System.out.println("Position2: "+pos2.gibX()+", "+pos2.gibY());
+        System.out.println("Position3: "+pos3.gibX()+", "+pos3.gibY());
+
         this.repaint();
 
     }
@@ -116,6 +175,11 @@ public class SpielfeldPanel extends JPanel implements MouseListener
     }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
+    }
+    
+    public int gibSpielerDesZuges() {
+        //TODO: Pruefen ob überhaupt Zug ausgewaehlt
+        return spielfeld[10-pos1.gibY()][pos1.gibX()];
     }
 
 }

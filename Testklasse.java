@@ -24,6 +24,19 @@ public class Testklasse
     private Vektor runter2;
     private Vektor rechts;
     private Vektor links;
+    private AbaloneGUI abaloneG1;
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     
     
@@ -67,6 +80,9 @@ public class Testklasse
         runter2 = spiel1.runter;
         rechts = spiel1.rechts;
         links = spiel1.links;
+        abaloneG1 = new AbaloneGUI();
+        abaloneG1.setzeSpiel(spiel1);
+        abaloneG1.zeigeSpiel();
     }
 
     /**

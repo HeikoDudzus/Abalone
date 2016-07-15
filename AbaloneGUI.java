@@ -18,6 +18,8 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     private SpielfeldPanel sfeldPanel = new SpielfeldPanel(); //Das Spielfeld
     private JTextField textfeld;
     private JButton button1;
+    private Spiel spiel;
+
     // Ende Attribute
 
     public AbaloneGUI() { 
@@ -41,8 +43,8 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         cp.add(textfeld);
 
         button1 = new JButton();
-        button1.setBounds(20, 400, 120, 20);
-        button1.setText("Neues Spiel");
+        button1.setBounds(20, 440, 120, 20);
+        button1.setText("Ziehe");
         button1.addActionListener(this);
         cp.add(button1);
 
@@ -50,12 +52,6 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
 
         setVisible(true);
     } // end of public VierGUI
-
-    // Anfang Methoden
-    public void sfeldPanel_MouseReleased(MouseEvent evt) {
-        int wf = sfeldPanel.getWidth()/7; // Spielfeldbreite durch 7 = spaltenbreite
-        int reihe = Math.min((int) ((double)evt.getX()/wf),7); //x-Koordinate des Clicks / Spaltenbreite 
-    } // end of sfeldPanel_MouseReleased
 
     /**
      * zeige zeichnet ein uebergebenes Spielfeld aus int
@@ -68,7 +64,20 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource(); //Quelle der Action ermitteln
         if (source == button1) {
-            //Neues Spiel starten
+            //Zug ziehen
+            if (sfeldPanel.gibZug() != null) {
+                // es wurden drei Felder ausgewählt
+                Position[] felder = sfeldPanel.gibZug();
+                int spielerNr = sfeldPanel.gibSpielerDesZuges();
+                System.out.println("Pos1: "+felder[0].gibX()+", "+felder[0].gibY());
+                System.out.println("Pos2: "+felder[1].gibX()+", "+felder[1].gibY());
+                System.out.println("Pos3: "+felder[2].gibX()+", "+felder[2].gibY());
+                System.out.println("SpielerNr: "+spielerNr);
+                System.out.println("Name: "+spiel.gibSpielerNr(spielerNr).gibName());
+                
+                System.out.println(spiel.schiebe(felder[0], felder[1], new Vektor(felder[0],felder[2]), spiel.gibSpielerNr(spielerNr)));
+                this.zeigeSpiel();
+            }
             // } else if  (source == button2) { //gibt es noch nicht
         } 
     }
@@ -90,6 +99,14 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
                 {0,2,2,2,2,2,0,0,0,0,0},
                 {0,0,0,0,0,0,0,0,0,0,0}};
        sfeldPanel.zeige(tfeld);
+    }
+    
+    public void setzeSpiel(Spiel pSpiel) {
+        spiel = pSpiel;
+    }
+    
+    public void zeigeSpiel() {
+        if (spiel!=null) zeige(spiel.toIntegerArray());
     }
     // Ende Methoden
 } // end of class VierGUI
