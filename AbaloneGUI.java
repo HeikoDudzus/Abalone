@@ -13,11 +13,27 @@ import javax.swing.event.*;
  * @author scholl@unterrichtsportal.org
  */
 
+/*
+ * Zur Erinnerung
+ * 
+ * Um in einem Textfeld mit Scrollbalken am Ende zu bleiben (aus Kniffel von Jens):
+ *      tA1.setText(ausgabe);
+ *       int len = tA1.getDocument().getLength();
+ *       tA1.setCaretPosition(len);
+ *       
+ *       tA1 = new JTextArea();
+ *       JScrollPane lleiste1 = new JScrollPane(tA1);
+ *       lleiste1.setBounds(460, 480, 420, 100);
+ *       lleiste1.setBackground(new Color(255, 255, 255));
+ */
+
 public class AbaloneGUI extends JFrame implements ActionListener { //ActionListener erst mal weglassen
     // Anfang Attribute
     private SpielfeldPanel sfeldPanel = new SpielfeldPanel(); //Das Spielfeld
-    private JTextField textfeld;
-    private JButton button1;
+    private JTextField textfeld, tfBefehl;
+    private JTextArea tA1;
+    private JScrollPane sp1;
+    private JButton button1, bSendCmd;
     private Spiel spiel;
 
     // Ende Attribute
@@ -47,6 +63,33 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         button1.setText("Ziehe");
         button1.addActionListener(this);
         cp.add(button1);
+        
+        tA1 = new JTextArea();
+        tA1.setEditable(false);
+        JScrollPane sP1 = new JScrollPane(tA1);
+        sP1.setBounds(20, 470, 420, 100);
+        sP1.setBackground(new Color(255, 255, 255));
+        cp.add(sP1);
+        
+        tfBefehl = new JTextField();
+        tfBefehl.setBounds(20, 580, 300, 25);
+        tfBefehl.addActionListener(new ActionListener() { 
+                public void actionPerformed(ActionEvent evt) { 
+                    bSendCmd_ActionPerformed(evt);
+                }
+            });
+        cp.add(tfBefehl);
+        bSendCmd = new JButton();
+        bSendCmd.setBounds(330, 580, 90, 25);
+        bSendCmd.setText("SendCmd");
+        bSendCmd.setMargin(new Insets(2, 2, 2, 2));
+        bSendCmd.addActionListener(new ActionListener() { 
+                public void actionPerformed(ActionEvent evt) { 
+                    bSendCmd_ActionPerformed(evt);
+                }
+            });
+        cp.add(bSendCmd);        
+        
 
         // Ende Komponenten
 
@@ -108,5 +151,11 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     public void zeigeSpiel() {
         if (spiel!=null) zeige(spiel.toIntegerArray());
     }
+    
+    public void bSendCmd_ActionPerformed(ActionEvent evt) {
+        // TODO hier Quelltext einfuegen (Send Command aus jTextField3)
+            System.out.println("Sende Commando:"+tfBefehl.getText());
+            tfBefehl.setText("");
+    } // end of bSendCmd_ActionPerformed    
     // Ende Methoden
 } // end of class VierGUI
