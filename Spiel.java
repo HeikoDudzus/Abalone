@@ -164,6 +164,7 @@ public class Spiel implements Zustand
              * und hat moeglicherweise verloren.
              */
             Spieler spieler = pStein.gibBesitzer();
+            if (spieler == pSpieler) return false;
             spieler.gibSteinAb();
             if (spieler.hatVerloren()) beendeSpiel(spieler);
             return true;
