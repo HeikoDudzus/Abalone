@@ -26,8 +26,8 @@ public class ClientGUI extends JFrame {
     private JTextArea tA1;
     private JScrollPane sP1;
     // Ende Gui-Attribute
-    int spieltyp=0; //0-Einzel, 1-Versus, 2-Team - TODO Sollte eigentlich weg
-    private MyClient client;
+    //int spieltyp=0; //0-Einzel, 1-Versus, 2-Team - TODO Sollte eigentlich weg
+    private NRWClient nrwclient;
     private boolean isConnected = false;
     private int participatesInGame = -1; //GameNummer, -1 wenn kein Spiel
     private boolean isPlaying = false; //Spielt gerade ein Spiel
@@ -195,11 +195,11 @@ public class ClientGUI extends JFrame {
 
     public void jButton4_ActionPerformed(ActionEvent evt) { //Create
         //Spiel wird erzeugt
-        client.execServerCmd("c");
+        nrwclient.execServerCmd("c");
     } // end of jButton4_ActionPerformed
 
     public void jButton5_ActionPerformed(ActionEvent evt) { //Leave
-        client.execServerCmd("q");
+        nrwclient.execServerCmd("q");
     } // end of jButton5_ActionPerformed
 
     public void jButton6_ActionPerformed(ActionEvent evt) { //Join
@@ -212,7 +212,7 @@ public class ClientGUI extends JFrame {
             String spiel = (String)spielAuswahl.getSelectedItem();
             String[] spielNr = spiel.split(" ");
             if (spielNr.length>0) {
-                client.execServerCmd("j "+spielNr[0]);
+                nrwclient.execServerCmd("j "+spielNr[0]);
             } else {
                 System.out.println("FEHLER: Spielnummer konnte nicht ermittelt werden");
             }
@@ -220,18 +220,18 @@ public class ClientGUI extends JFrame {
     } // end of jButton6_ActionPerformed
 
     public void jButton1_ActionPerformed(ActionEvent evt) { //Start
-        client.execServerCmd("r");
+        nrwclient.execServerCmd("r");
     } // end of jButton6_ActionPerformed
 
     public void jButton2_ActionPerformed(ActionEvent evt) { //Aktualisiere offene Spiele
-        client.execServerCmd("l o");
+        nrwclient.execServerCmd("l o");
     } // end of jButton6_ActionPerformed
 
     public void jButton7_ActionPerformed(ActionEvent evt) {
         // TODO hier Quelltext einfügen (Send Command aus jTextField3)
-        if (client!=null && client.isConnected()) {
+        if (nrwclient!=null && nrwclient.isConnected()) {
             jList1Model.addElement("Sende Commando:"+jTextField3.getText());
-            client.execServerCmd(jTextField3.getText());
+            nrwclient.execServerCmd(jTextField3.getText());
             jTextField3.setText("");
         } else {
             jList1Model.addElement("Client nicht verbunden");
@@ -242,23 +242,23 @@ public class ClientGUI extends JFrame {
         // Connect / Disconnect-Button
         if (!isConnected) {
             setConnected(false);
-            if (client == null || !client.isConnected()) {
+            if (nrwclient == null || !nrwclient.isConnected()) {
                 try {
-                    client = new MyClient(jTextField1.getText(),Integer.parseInt(jTextField2.getText()), this);
+                    nrwclient = new NRWClient(jTextField1.getText(),Integer.parseInt(jTextField2.getText()), this);
 
-                    Thread thread = new Thread(client);
-                    thread.start();
+                    //Thread thread = new Thread(client);
+                    //thread.start();
                 } catch (Exception ex) {
                     textAusgeben(ex.getMessage());
                 }
             }
         } else { //Disconnect
-            if (client!=null) {
-                client.beenden();
-                client=null;
+            if (nrwclient!=null) {
+                nrwclient.beenden();
+                nrwclient=null;
             }
         }
-        if (client != null && client.isConnected()) {
+        if (nrwclient != null && nrwclient.isConnected()) {
             setConnected(true);
         } else {
             setConnected(false);

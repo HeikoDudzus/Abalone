@@ -47,11 +47,6 @@ public class GameServer extends Server implements Zustand
      * @param pMessage Nachricht des Clients
      */
     public void processMessage(String pClientIP, int pClientPort, String pMessage) {
-        if (pMessage.startsWith(">ping")) {
-            System.out.println("Ping erhalten - pong wird gesendet");
-            send(pClientIP, pClientPort, ">pong");
-            return;
-        }
         Spieler spieler = sucheClientNachIPUndPort(pClientIP, pClientPort);
         //System.out.println(spieler.gibName());
         if (spieler != null){
