@@ -59,7 +59,7 @@ public class MyClient implements Runnable
                 while(!sock.isClosed() && System.currentTimeMillis()-timeIGotLastPong<20000) {
                     out.println(">ping");
                     out.flush();
-                    //System.out.println(">ping gesendet");
+                    System.out.println(">ping gesendet");
                     Thread.sleep(secs*1000);
                 }
                 //Wenn kein ping mehr kommt - Socket schliessen
@@ -133,7 +133,9 @@ public class MyClient implements Runnable
 
     public void verarbeite(String input) {
         clientGUI.textAusgeben(line);
-
+        if (input.startsWith(">pong")) {
+            timeIGotLastPong = System.currentTimeMillis();
+        }
         /* //alte Verarbeitung aus MineSweeper
         if (input.startsWith(">startespiel")) {
         //Spiel starten

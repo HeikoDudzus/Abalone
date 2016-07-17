@@ -34,7 +34,7 @@ public class GameServer extends Server implements Zustand
     public void processNewConnection(String pClientIP, int pClientPort) {
         send(pClientIP, pClientPort, "Herzlich Willkommen auf dem Abalone-Gameserver!");
         send(pClientIP, pClientPort, "\"QUIT\" beendet die Verbindung!");
-        System.out.println(pClientIP + " : " + pClientPort + " hat sich eingewählt.");
+        System.out.println(pClientIP + " : " + pClientPort + " hat sich eingewï¿½hlt.");
         Spieler spieler = new Spieler(pClientIP, pClientPort);
         spielerListe.append(spieler);
         send(pClientIP, pClientPort, "Waehlen Sie einen Nickname mit NICK <name>");
@@ -47,6 +47,11 @@ public class GameServer extends Server implements Zustand
      * @param pMessage Nachricht des Clients
      */
     public void processMessage(String pClientIP, int pClientPort, String pMessage) {
+        if (pMessage.startsWith(">ping")) {
+            System.out.println("Ping erhalten - pong wird gesendet");
+            send(pClientIP, pClientPort, ">pong");
+            return;
+        }
         Spieler spieler = sucheClientNachIPUndPort(pClientIP, pClientPort);
         //System.out.println(spieler.gibName());
         if (spieler != null){
@@ -175,7 +180,7 @@ public class GameServer extends Server implements Zustand
                     richtung = new Vektor(bisSpalte, bisZeile, nachSpalte, nachZeile);
                 } catch (Exception e) {
                     //System.out.println("Konnte keine Integer parsen!");
-                    send(clientIP, clientPort, "Die Eingaben waren ungültig");
+                    send(clientIP, clientPort, "Die Eingaben waren ungï¿½ltig");
                     validInt = false;
                 }
                 if (s != null && validInt) {
@@ -205,7 +210,7 @@ public class GameServer extends Server implements Zustand
                             }
                         }
                         /* 
-                         * Auch eigene Kugeln können über den Rand gefallen sein!
+                         * Auch eigene Kugeln kï¿½nnen ï¿½ber den Rand gefallen sein!
                          */ 
                         if (pClient.hatVerloren()) {
                             pClient.setzeZustand(OVER);
