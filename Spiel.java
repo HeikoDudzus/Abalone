@@ -24,6 +24,7 @@ public class Spiel implements Zustand
     private Spieler gewinner;
     private Spieler verlierer;
     private boolean spielLaeuft;
+    private int spielNr;
 
     // fuer Testzwecke: erlaubte Verschiebungen
     public Vektor rechtsOben = new Vektor(1,1);
@@ -36,14 +37,15 @@ public class Spiel implements Zustand
     /**
      * Constructor for objects of class Spielfeld
      */
-    public Spiel(Spieler pSpieler1, Spieler pSpieler2)
+    public Spiel(Spieler pSpieler1, int pSpielNr)
     {
+        spielNr = pSpielNr;
         spielfeld = new Feld[11][11];
         spielerListe = new List<Spieler>();
         spielerListe.append(pSpieler1);
-        spielerListe.append(pSpieler2);
+        //spielerListe.append(pSpieler2);
 
-        spielLaeuft = true;
+        spielLaeuft = false;
 
         // Felder erzeugen und in Array verwalten
         for (int zeile = 0; zeile < 11; zeile++) {
@@ -52,25 +54,7 @@ public class Spiel implements Zustand
             }
         }
 
-        // Startpositionen belegen
-        for (int spalte = 1; spalte <=5; spalte++) {
-            spielfeld[1][spalte].setzeStein(new Stein(pSpieler1));
-            spielfeld[9][10-spalte].setzeStein(new Stein(pSpieler2));
-            pSpieler1.erhalteStein();
-            pSpieler2.erhalteStein();
-        }
-        for (int spalte = 1; spalte <=6; spalte++) {
-            spielfeld[2][spalte].setzeStein(new Stein(pSpieler1));
-            spielfeld[8][10-spalte].setzeStein(new Stein(pSpieler2));
-            pSpieler1.erhalteStein();
-            pSpieler2.erhalteStein();
-        }
-        for (int spalte = 3; spalte <=5; spalte++) {
-            spielfeld[3][spalte].setzeStein(new Stein(pSpieler1));
-            spielfeld[7][10-spalte].setzeStein(new Stein(pSpieler2));
-            pSpieler1.erhalteStein();
-            pSpieler2.erhalteStein();
-        }
+
     }
 
     /**
@@ -359,6 +343,51 @@ public class Spiel implements Zustand
     public boolean beideSpielerWeg() {
         return spielerListe.isEmpty();
     }
+    
+    /**
+     * isJoinable prueft ob ein zweiter Spieler an dem spiel teilnehmen 
+     * kann (wenn also bisher nur ein Spieler vorhanden ist)
+     */
+    public boolean isJoinable() { 
+        if (beideSpielerWeg()) return false;
+        spielerListe.toFirst();
+        if (!spielerListe.hasAccess()) return false;
+        spielerListe.next();
+        if (!spielerListe.hasAccess()) return true;
+        return false;
+    }
+    
+    public boolean join(Spieler pSpieler2) {
+        if (!isJoinable()) return false;
+        spielerListe.toFirst();
+        Spieler pSpieler1 = spielerListe.getContent();
+        spielerListe.append(pSpieler2);
+        
+        // Startpositionen belegen
+        for (int spalte = 1; spalte <=5; spalte++) {
+            spielfeld[1][spalte].setzeStein(new Stein(pSpieler1));
+            spielfeld[9][10-spalte].setzeStein(new Stein(pSpieler2));
+            pSpieler1.erhalteStein();
+            pSpieler2.erhalteStein();
+        }
+        for (int spalte = 1; spalte <=6; spalte++) {
+            spielfeld[2][spalte].setzeStein(new Stein(pSpieler1));
+            spielfeld[8][10-spalte].setzeStein(new Stein(pSpieler2));
+            pSpieler1.erhalteStein();
+            pSpieler2.erhalteStein();
+        }
+        for (int spalte = 3; spalte <=5; spalte++) {
+            spielfeld[3][spalte].setzeStein(new Stein(pSpieler1));
+            spielfeld[7][10-spalte].setzeStein(new Stein(pSpieler2));
+            pSpieler1.erhalteStein();
+            pSpieler2.erhalteStein();
+        }
+        
+        spielLaeuft = true;
+        
+        //beiden Spielern das Spielfeld senden
+        return true;
+    }
 
     public Spieler gibSpielerNr(int pNr) {
         spielerListe.toFirst();
@@ -372,6 +401,10 @@ public class Spiel implements Zustand
             }
         }
         return null;
+    }
+    
+    public int gibSpielNr() {
+        return spielNr;
     }
 
 }

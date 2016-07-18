@@ -64,13 +64,14 @@ public class Testklasse
     @Before
     public void setUp()
     {
-        spieler1 = new Spieler("", 0);
-        spieler2 = new Spieler("", 0);
+        spieler1 = new Spieler("", 0, null);
+        spieler2 = new Spieler("", 0, null);
         spieler1.setzeName("Heiko");
         spieler2.setzeName("Mona");
         spieler1.setzeSymbol('X');
         spieler2.setzeSymbol('O');
-        spiel1 = new Spiel(spieler1, spieler2);
+        spiel1 = new Spiel(spieler1,1);
+        spiel1.join(spieler2);
         //rechtsOben = spiel1.rechtsOben;
         //spiel1.schiebeStein(1, 1, v);
         runter = spiel1.runter;

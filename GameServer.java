@@ -12,6 +12,7 @@ public class GameServer extends Server implements Zustand
     private List<Spieler> spielerListe;
     private Queue<Spieler> warteschlange;
     private List<Spiel> spiele;
+    private int nextSpielNr = 1;
 
     /**
      * Konstruktor fuer Objekte der Klasse GameServer
@@ -35,7 +36,7 @@ public class GameServer extends Server implements Zustand
         send(pClientIP, pClientPort, "Herzlich Willkommen auf dem Abalone-Gameserver!");
         send(pClientIP, pClientPort, "\"QUIT\" beendet die Verbindung!");
         System.out.println(pClientIP + " : " + pClientPort + " hat sich eingew�hlt.");
-        Spieler spieler = new Spieler(pClientIP, pClientPort);
+        Spieler spieler = new Spieler(pClientIP, pClientPort, this);
         spielerListe.append(spieler);
         send(pClientIP, pClientPort, "Waehlen Sie einen Nickname mit NICK <name>");
     }
@@ -157,6 +158,46 @@ public class GameServer extends Server implements Zustand
                 send(clientIP, clientPort, "+PASSWD changed");
             } else {
                 send(clientIP, clientPort, "ERR passwd missing ? ");
+            }
+        } else if (pMessage.startsWith("CREATE")) {
+            //neues Spiel erstellen
+            Spiel s = new Spiel(pClient, nextSpielNr++);
+            spiele.append(s);
+            send(clientIP, clientPort, "+Game "+s.gibSpielNr()+" created");
+        } else if (pMessage.startsWith("SHOW ")) {
+            //Anzeige von Informationen
+            String[] stuecke = pMessage.split(" ");
+            if (stuecke.length > 0 && stuecke[1].equals("OPEN")) {
+                //Liste der offenen Spiele zurückgeben
+                send(clientIP, clientPort, "+LIST OPEN GAMES");
+                spiele.toFirst();
+                while (spiele.hasAccess()) {
+                    send(clientIP, clientPort, "+GAME "+spiele.getContent().gibSpielNr()+" OPEN: "+spiele.getContent().gibSpielerNr(1).gibName());
+                    spiele.next();
+                }
+                send(clientIP,clientPort, "+END");
+
+            } else {
+                send(clientIP, clientPort, "ERR SHOW unknown option");
+            }
+        } else if (pMessage.startsWith("JOIN ")) {
+            //An einem Spiel Teilnehmen
+            String[] stuecke = pMessage.split(" ");
+            if (stuecke.length > 0) {
+                //An Spielnr teilnehmen
+                int nr = Integer.parseInt(stuecke[1]);
+                spiele.toFirst();
+                while (spiele.hasAccess() && spiele.getContent().gibSpielNr()!=nr) {
+                    spiele.next();
+                }
+                if (spiele.hasAccess() && spiele.getContent().isJoinable()) { // Spiel gefunden
+                    send(clientIP, clientPort, "+GAME "+nr+" joined");
+                    spiele.getContent().join(pClient);
+                } else {
+                    send(clientIP, clientPort, "ERR game "+nr+" not found or not joinable");
+                }
+            } else {
+                send(clientIP, clientPort, "ERR JOIN unknown option - expected game nr");
             }
         } else {
             send(clientIP, clientPort, "ERR invalid command");
