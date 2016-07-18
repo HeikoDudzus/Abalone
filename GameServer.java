@@ -53,10 +53,8 @@ public class GameServer extends Server implements Zustand
             int zustand = spieler.gibZustand();
             switch (zustand) {
                 case NICKNAME : processNickname(spieler, pMessage); break;
-                case WAIT : processWait(spieler, pMessage); break;
-                case PASSIVE : processPassive(spieler, pMessage); break;
-                case ACTIVE : processActive(spieler, pMessage); break;
-                case OVER : processOver(spieler, pMessage); break;
+                case WAITPW : processWaitPW(spieler, pMessage); break;
+                case AUTHORIZED : processAuthorized(spieler, pMessage); break;
                 default: System.out.println("Fehler, Client-Zustand "+ zustand+" nicht definiert.");
                 System.out.println(spieler);
             }
@@ -78,13 +76,19 @@ public class GameServer extends Server implements Zustand
             // NICK angefordert?
             if (stuecke[0].equals("NICK")){
                 // Ist ein Client mit dem gewuenschten Namen noch nicht vorhanden?
-                if (!nameVorhanden(stuecke[1]) && nameErlaubt(stuecke[1])){
+                if (nameVorhanden(stuecke[1]) && gibSpielerNachName(stuecke[1]).gibZustand()==DISCONNECTED) {
+                    Spieler temp = gibSpielerNachName(stuecke[1]);
+                    temp.setzeZustand(WAITPW);
+                    temp.setzeIP(clientIP);
+                    temp.setzePort(clientPort);
+                    send(clientIP, clientPort, "+NICKIS "+stuecke[1]);
+                } else if (!nameVorhanden(stuecke[1]) && nameErlaubt(stuecke[1])){
                     pClient.setzeName(stuecke[1]);
-                    pClient.setzeZustand(WAIT);
-                    send(clientIP, clientPort, "+NICKIS " + stuecke[1]);
-                    warteschlange.enqueue(pClient);
+                    pClient.setzeZustand(WAITPW);
+                    send(clientIP, clientPort, "+GUESTNICK " + stuecke[1]);
+                    //warteschlange.enqueue(pClient);
                     // Wenn schon zwei Spieler angemeldet sind, soll das Spiel gestartet werden
-                    starteSpielWennMoeglich();
+                    //starteSpielWennMoeglich();
                 } else {
                     send(clientIP, clientPort, "Name invalid");
                 }
@@ -99,180 +103,63 @@ public class GameServer extends Server implements Zustand
     }
 
     /**
-     * Nachricht eines wartenden Spielers wird verarbeitet.
+     * Passworteingabe wird verarbeitet.
      * @param pClient anfragender Spieler
      * @param pMessage Nachricht des Spielers
      */
-    private void processWait(Spieler pClient, String pMessage) {
+    private void processWaitPW(Spieler pClient, String pMessage) {
         String clientIP = pClient.gibIP();
         int clientPort = pClient.gibPort();
         if (pMessage.equals("QUIT")) {
             send(clientIP, clientPort, "+OK see you soon");
-            loescheSpieler(pClient);
+            pClient.setzeZustand(DISCONNECTED);
             closeConnection(clientIP, clientPort);
+        } else if (pMessage.startsWith("PASS")) {
+            String[] stuecke = pMessage.split(" ");
+            if (pClient.isGuest()) {
+                send(clientIP, clientPort, "+LOGGEDIN as guest");
+                pClient.setzeZustand(AUTHORIZED);
+            } else if (stuecke.length > 0 && pClient.checkPW(stuecke[1])) {
+                send(clientIP, clientPort, "+LOGGEDIN");
+                pClient.setzeZustand(AUTHORIZED);
+            } else {
+                send(clientIP, clientPort, "+INVPASS");
+                pClient.setzeZustand(NICKNAME);
+            }
         } else {
-            send(clientIP, clientPort, "ERR unknown command");
+            send(clientIP, clientPort, "ERR unknown command - PASS <password> expected");
         }
     }
 
     /**
-     * Nachricht eines passiven Spielers wird verarbeitet.
+     * Nachrichten eines authorisierten Spielers werden verarbeitet.
      * @param pClient anfragender Spieler
      * @param pMessage Nachricht des Spielers
      */
-    private void processPassive(Spieler pClient, String pMessage) {
+    private void processAuthorized(Spieler pClient, String pMessage) {
         String clientIP = pClient.gibIP();
         int clientPort = pClient.gibPort();
-        Spiel s = gibSpielNachSpieler(pClient);
-        Spieler gegenspieler = s.gibGegenspieler(pClient);
         if (pMessage.equals("QUIT")) {
             send(clientIP, clientPort, "+OK see you soon");
             try {
-                send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+WON");
-                gegenspieler.setzeZustand(OVER);
-                registriereGewinnerInDB(gegenspieler);
+                //TODO Spiele beenden bzw. adjournen
+                pClient.setzeZustand(DISCONNECTED);
             } catch (Exception e) {
                 System.out.println("Gegenspieler nicht mehr vorhanden!");
             }
-            s.loescheSpieler(pClient);
-            if (s.beideSpielerWeg()) loescheSpielAusListe(s);
-            loescheSpieler(pClient);
+            if (pClient.isGuest()) loescheSpieler(pClient);
             closeConnection(clientIP, clientPort);
-        } else {
-            send(clientIP, clientPort, "ERR it is not your turn");
-        }
-    }
-
-    /**
-     * Nachricht des Spielers, der am Zug ist, wird verarbeitet.
-     * @param pClient anfragender Spieler
-     * @param pMessage Nachricht des Spielers
-     */
-    private void processActive(Spieler pClient, String pMessage) {
-        String clientIP = pClient.gibIP();
-        int clientPort = pClient.gibPort();
-        String[] stuecke = pMessage.split(" ");
-        char symbol = pClient.gibSymbol();
-        Spiel s = gibSpielNachSpieler(pClient);
-        Spieler gegenspieler = s.gibGegenspieler(pClient);
-        boolean validInt = true;
-        int vonZeile=0, vonSpalte=0;
-        int bisZeile=0, bisSpalte=0;
-        int nachZeile=0, nachSpalte=0;
-        Position von = null, bis = null;
-        Vektor richtung = null;
-        if (stuecke.length == 7) {
-            if (stuecke[0].equals("SHIFT")) {
-                try {
-                    vonZeile = Integer.parseInt(stuecke[1]);
-                    vonSpalte = Integer.parseInt(stuecke[2]);
-                    bisZeile = Integer.parseInt(stuecke[3]);
-                    bisSpalte = Integer.parseInt(stuecke[4]);
-                    nachZeile = Integer.parseInt(stuecke[5]);
-                    nachSpalte = Integer.parseInt(stuecke[5]);
-                    von = new Position(vonSpalte, vonZeile);
-                    bis = new Position(bisSpalte, bisZeile);
-                    richtung = new Vektor(bisSpalte, bisZeile, nachSpalte, nachZeile);
-                } catch (Exception e) {
-                    //System.out.println("Konnte keine Integer parsen!");
-                    send(clientIP, clientPort, "Die Eingaben waren ung�ltig");
-                    validInt = false;
-                }
-                if (s != null && validInt) {
-                    boolean status = s.schiebe(von, bis, richtung,pClient);
-                    if (status) {
-                        //TODO
-                        //send(clientIP, clientPort, "+SET "+symbol+" "+i+" "+j);
-                        send(clientIP, clientPort, "+PASSIVE");
-                        send(clientIP, clientPort, s.toString());
-                        pClient.setzeZustand(PASSIVE);
-                        // TODO
-                        //send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+SET "+symbol+" "+i+" "+j);
-                        send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+ACTIVE");
-                        send(gegenspieler.gibIP(), gegenspieler.gibPort(), s.toString());
-                        gegenspieler.setzeZustand(ACTIVE);
-                        /* 
-                         * Beim Zug koennten gegenrische Kugeln ueber den Rand gefallen sein
-                         */
-                        if (gegenspieler.hatVerloren()) {
-                            pClient.setzeZustand(OVER);
-                            gegenspieler.setzeZustand(OVER);
-                            send(clientIP, clientPort, "+WON");
-                            try {  // braucht man diesen Try-Catch-Block wirklich?
-                                send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+LOST");
-                            } catch (Exception e) {
-                                System.out.println("Gegenspieler nicht mehr vorhanden!");
-                            }
-                        }
-                        /* 
-                         * Auch eigene Kugeln k�nnen �ber den Rand gefallen sein!
-                         */ 
-                        if (pClient.hatVerloren()) {
-                            pClient.setzeZustand(OVER);
-                            gegenspieler.setzeZustand(OVER);
-                            send(clientIP, clientPort, "+LOST");
-                            try {  // braucht man diesen Try-Catch-Block wirklich?
-                                send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+WON");
-                            } catch (Exception e) {
-                                System.out.println("Gegenspieler nicht mehr vorhanden!");
-                            }
-                        }
-                    } else {
-                        send(clientIP, clientPort, "move not possible");
-                    }
-                }
-            }
-        } else if (stuecke.length == 1) {
-            if (pMessage.equals("QUIT")) {
-                send(clientIP, clientPort, "+OK see you soon");
-                try {
-                    send(gegenspieler.gibIP(), gegenspieler.gibPort(), "+WON");
-                    gegenspieler.setzeZustand(OVER);
-                    registriereGewinnerInDB(gegenspieler);
-                } catch (Exception e) {
-                    System.out.println("Gegenspieler nicht mehr vorhanden!");
-                }
-                s.loescheSpieler(pClient);
-                if (s.beideSpielerWeg()) loescheSpielAusListe(s);
-                loescheSpieler(pClient);
-                closeConnection(clientIP, clientPort);
+        } else if (pMessage.startsWith("PASSWD ")) {
+            String[] stuecke = pMessage.split(" ");
+            if (stuecke.length > 0) {
+                pClient.setPasswd(stuecke[1]);
+                pClient.setGuest(false);
+                send(clientIP, clientPort, "+PASSWD changed");
             } else {
-                send(clientIP, clientPort, "ERR unknown command");
+                send(clientIP, clientPort, "ERR passwd missing ? ");
             }
         } else {
-            send(clientIP, clientPort, "ERR unknown command");
-        }
-    }
-
-    /**
-     * Nachricht eines Spielers, der ein Spiel beendet hat, wird verarbeitet.
-     * @param pClient anfragender Spieler
-     * @param pMessage Nachricht des Spielers
-     */
-    private void processOver(Spieler pClient, String pMessage) {
-        String clientIP = pClient.gibIP();
-        int clientPort = pClient.gibPort();
-        Spiel s = gibSpielNachSpieler(pClient);
-        Spieler gegenspieler = s.gibGegenspieler(pClient);
-        if (pMessage.equals("NEW")) {
-            // Spieler in Wartezustand
-            send(clientIP, clientPort, "Waiting for a new game");
-            send(clientIP, clientPort, "+WAIT");
-            pClient.setzeZustand(WAIT);
-            warteschlange.enqueue(pClient);
-            // Spieler aus seinem Spiel nehmen
-            s.loescheSpieler(pClient);
-            // Liste der Spiele aktualisieren
-            if (s.beideSpielerWeg()) loescheSpielAusListe(s);
-            starteSpielWennMoeglich();
-        } else if(pMessage.equals("QUIT")) {
-            send(clientIP, clientPort, "+OK see you soon");
-            s.loescheSpieler(pClient);
-            if (s.beideSpielerWeg()) loescheSpielAusListe(s);
-            loescheSpieler(pClient);
-            closeConnection(clientIP, clientPort);
-        } else {
-            send(pClient.gibIP(), pClient.gibPort(), "ERR unknown command");
+            send(clientIP, clientPort, "ERR invalid command");
         }
     }
 
@@ -323,6 +210,23 @@ public class GameServer extends Server implements Zustand
     }
 
     /**
+     * liefert den Spieler zu einem Namen
+     * @param pName angefragter Name
+     * @return Spieler sonst null
+     */
+    private Spieler gibSpielerNachName(String pName) {
+        spielerListe.toFirst();
+        while (spielerListe.hasAccess()) {
+            Spieler spieler = spielerListe.getContent();
+            if (pName.equals(spieler.gibName())) {
+                return spieler;
+            }
+            spielerListe.next();
+        }
+        return null;
+    }
+
+    /**
      * Es wird geprueft, ob der Name schon in der Spielerliste des Servers vorhanden ist.
      * @param pName angefragter Name
      * @return Wahrheitswert: Name schon vergeben?
@@ -349,33 +253,6 @@ public class GameServer extends Server implements Zustand
         s.loescheSpieler(spieler);
         if (s.beideSpielerWeg()) loescheSpielAusListe(s);
         loescheSpieler(spieler);*/
-    }
-
-    private void starteSpielWennMoeglich(){
-        Spieler spieler1 = warteschlange.front();
-        warteschlange.dequeue();
-        if (warteschlange.isEmpty()) {
-            warteschlange.enqueue(spieler1);
-        } else {
-            Spieler spieler2 = warteschlange.front();
-            warteschlange.dequeue();
-            spieler1.setzeSymbol('X');
-            spieler2.setzeSymbol('O');
-            Spiel s = new Spiel(spieler1, spieler2);
-            spiele.append(s);
-            spieler1.setzeZustand(ACTIVE);
-            spieler2.setzeZustand(PASSIVE);
-            send(spieler1.gibIP(), spieler1.gibPort(), "+GAMEWITH "+spieler2.gibName());
-            send(spieler1.gibIP(), spieler1.gibPort(), "+SYMBOL "+spieler1.gibSymbol());
-            send(spieler2.gibIP(), spieler2.gibPort(), "+GAMEWITH "+spieler1.gibName());
-            send(spieler2.gibIP(), spieler2.gibPort(), "+SYMBOL "+spieler2.gibSymbol());
-            send(spieler1.gibIP(), spieler1.gibPort(), "+ACTIVE");
-            send(spieler2.gibIP(), spieler2.gibPort(), "+PASSIVE");
-            send(spieler1.gibIP(), spieler1.gibPort(), "-Spielzuege werden mit SHIFT <x> <y> <i> <j> gemacht.");
-            send(spieler2.gibIP(), spieler2.gibPort(), "-Spielzuege werden mit MOVE <x> <y> <i> <j> gemacht.");
-            System.out.println("Spiel gestartet mit "+spieler1.gibName()+" und "+spieler2.gibName());
-            registriereSpielInDB(spieler1, spieler2);
-        }
     }
 
     /**

@@ -8,8 +8,7 @@
 public interface Zustand
 {
     public static final int NICKNAME = 0;
-    public static final int WAIT = 1;
-    public static final int PASSIVE = 2;
-    public static final int ACTIVE = 3;
-    public static final int OVER = 4;
+    public static final int WAITPW = 1;
+    public static final int AUTHORIZED = 2;
+    public static final int DISCONNECTED = 3;
 }

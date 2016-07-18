@@ -14,6 +14,8 @@ public class Spieler implements Zustand
     private int zustand;
     private char symbol;
     private int anzahlSteine;
+    private boolean guest = true;
+    private String passwd = "";
     //private List<Steine> steineListe;
 
     /**
@@ -29,9 +31,17 @@ public class Spieler implements Zustand
     public String gibIP(){
         return ip;
     }
+    
+    public void setzeIP(String pIp) {
+        ip = pIp;
+    }
 
     public int gibPort(){
         return port;
+    }
+    
+    public void setzePort(int pPort) {
+        port = pPort;
     }
     
     public boolean vergleicheIPUndPort(String pIP, int pPort) {
@@ -73,5 +83,21 @@ public class Spieler implements Zustand
 
     public void gibSteinAb() {
         anzahlSteine--;
+    }
+    
+    public boolean isGuest() {
+        return guest;
+    }
+    
+    public void setGuest(boolean pGuest) {
+        guest = pGuest;
+    }
+    
+    public boolean checkPW(String pPasswd) {
+        return pPasswd.startsWith(passwd);
+    }
+    
+    public void setPasswd(String pPasswd) {
+        passwd = pPasswd;
     }
 }
