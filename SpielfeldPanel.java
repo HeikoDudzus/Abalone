@@ -17,6 +17,7 @@ public class SpielfeldPanel extends JPanel implements MouseListener
     private Position pos2 = new Position(2,3);
     private Position pos3 = new Position(3,4);
     private int zustandPositionsClick = 0; // 0 noch nichts, 1 pos1 gewählt, 2 pos3 gewählt
+    private int xposPressed, yposPressed;
 
     /**
      * Konstruktor fuer Objekte der Klasse SpielfeldPanel
@@ -133,7 +134,15 @@ public class SpielfeldPanel extends JPanel implements MouseListener
 
         switch(zustandPositionsClick) {
             case 0: //noch keine Wahl erfolgt
-            if (spielfeld[ypos+1][xpos+1]!=0) { //dort liegt eine Kugel - AChtung Tausch!!
+            if ((xpos != xposPressed || ypos != yposPressed)) {
+                pos1 = new Position(xposPressed+1, 9-yposPressed);
+                pos2 = new Position(xposPressed+1, 9-yposPressed);
+                pos3 = new Position(xpos+1, 9-ypos);
+                markierungen[xposPressed+1][yposPressed+1]=1;
+                markierungen[xposPressed+1][yposPressed+1]=2;
+                markierungen[xpos+1][ypos+1]=3;
+                zustandPositionsClick = 3;                
+            } else if (spielfeld[ypos+1][xpos+1]!=0) { //dort liegt eine Kugel - AChtung Tausch!!
                 markierungen[xpos+1][ypos+1]=1;
                 pos1 = new Position(xpos+1,9-ypos);
                 zustandPositionsClick++;
@@ -171,7 +180,31 @@ public class SpielfeldPanel extends JPanel implements MouseListener
 
     }
 
-    public void mousePressed(java.awt.event.MouseEvent e) {
+    public void mousePressed(java.awt.event.MouseEvent evt) {
+        //So kann mittels eines Clicks gezogen werden
+        // zu ziehende Kugel wird angeclickt, man bewegt sich 
+        // mit gedrueckter Maustaste auf das Zielfeld und laesst
+        // dort die Maustaste los
+        System.out.println("Mouse Pressed");
+        int x = evt.getX();
+        int y = evt.getY();
+        int w = this.getWidth();
+        int h = this.getHeight();
+        if (h > Math.sqrt(3)/2*(double)w) {
+            h = (int)(Math.sqrt(3)/2*(double)w);
+        } else {
+            w = (int)((double)h*2/Math.sqrt(3));
+        }
+        int r = (w/18); //Max Radius einer Kugel
+        double b = ((double)(y-r)/(Math.sqrt(3)*(double)r));
+        double a = ((double)(x+3*r)/(double)(2*r)-b/2);
+        xposPressed = (int)Math.round(a);
+        yposPressed = (int)Math.round(b);
+        System.out.println("b:"+b);
+        System.out.println("a:"+a);
+        System.out.println("x: "+Math.round(a)+" y: "+Math.round(b));
+        
+
     }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
