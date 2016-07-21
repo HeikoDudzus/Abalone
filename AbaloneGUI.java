@@ -1,4 +1,3 @@
- 
 
 import java.awt.*;
 import java.awt.event.*;
@@ -35,14 +34,20 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     private JScrollPane sp1;
     private JButton button1, bSendCmd;
     private Spiel spiel;
+    private int gameNr; //SpielNr auf dem Server
+    private ClientGUI myClientGUI = null; //ClientGUI von der das Brett gestartet wurde 
 
     // Ende Attribute
+    public AbaloneGUI(ClientGUI pClientGUI) {
+        this();
+        myClientGUI = pClientGUI;
+    }
 
     public AbaloneGUI() { 
         // Frame-Initialisierung
         super("Abalone GUI - Test");
         //setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setSize(600,800);  //Breite und H�he des Frames
+        setSize(600,800);  //Breite und Hoehe des Frames
         setResizable(false);
         Container cp = getContentPane();  //Container des Frames holen um ihn zu f�llen
         cp.setLayout(null); //kein automatisches Layout der Objekte
@@ -63,14 +68,14 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         button1.setText("Ziehe");
         button1.addActionListener(this);
         cp.add(button1);
-        
+
         tA1 = new JTextArea();
         tA1.setEditable(false);
         JScrollPane sP1 = new JScrollPane(tA1);
         sP1.setBounds(20, 470, 420, 100);
         sP1.setBackground(new Color(255, 255, 255));
         cp.add(sP1);
-        
+
         tfBefehl = new JTextField();
         tfBefehl.setBounds(20, 580, 300, 25);
         tfBefehl.addActionListener(new ActionListener() { 
@@ -89,10 +94,8 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
                 }
             });
         cp.add(bSendCmd);        
-        
 
         // Ende Komponenten
-
         setVisible(true);
     } // end of public VierGUI
 
@@ -102,6 +105,7 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
      */
     public void zeige(int[][] pSpielfeld) {
         sfeldPanel.zeige(pSpielfeld);
+        sfeldPanel.repaint();
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -116,10 +120,16 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
                 System.out.println("Pos2: "+felder[1].gibX()+", "+felder[1].gibY());
                 System.out.println("Pos3: "+felder[2].gibX()+", "+felder[2].gibY());
                 System.out.println("SpielerNr: "+spielerNr);
-                System.out.println("Name: "+spiel.gibSpielerNr(spielerNr).gibName());
-                
-                System.out.println(spiel.schiebe(felder[0], felder[1], new Vektor(felder[0],felder[2]), spiel.gibSpielerNr(spielerNr)));
-                this.zeigeSpiel();
+                if (spiel!= null) System.out.println("Name: "+spiel.gibSpielerNr(spielerNr).gibName());
+
+                if (myClientGUI != null) {
+                    //Zug an Server schicken
+                    myClientGUI.send("MOVE "+gameNr+" "+felder[0]+" "+felder[1]+" "+felder[2]);
+                } else {
+                    //lokales Spiel
+                    System.out.println(spiel.schiebe(felder[0], felder[1], new Vektor(felder[0],felder[2]), spiel.gibSpielerNr(spielerNr)));
+                    this.zeigeSpiel();
+                }
             }
             // } else if  (source == button2) { //gibt es noch nicht
         } 
@@ -141,21 +151,23 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
                 {0,2,2,2,2,2,2,0,0,0,0},
                 {0,2,2,2,2,2,0,0,0,0,0},
                 {0,0,0,0,0,0,0,0,0,0,0}};
-       sfeldPanel.zeige(tfeld);
+        sfeldPanel.zeige(tfeld);
     }
-    
+
     public void setzeSpiel(Spiel pSpiel) {
         spiel = pSpiel;
     }
-    
+
     public void zeigeSpiel() {
         if (spiel!=null) zeige(spiel.toIntegerArray());
     }
-    
+
     public void bSendCmd_ActionPerformed(ActionEvent evt) {
         // TODO hier Quelltext einfuegen (Send Command aus jTextField3)
-            System.out.println("Sende Commando:"+tfBefehl.getText());
-            tfBefehl.setText("");
+        System.out.println("Sende Commando:"+tfBefehl.getText());
+        tfBefehl.setText("");
     } // end of bSendCmd_ActionPerformed    
+    
+    public void setGameNr(int pGameNr) { gameNr = pGameNr; }
     // Ende Methoden
 } // end of class VierGUI

@@ -48,6 +48,7 @@ public class GameServer extends Server implements Zustand
      * @param pMessage Nachricht des Clients
      */
     public void processMessage(String pClientIP, int pClientPort, String pMessage) {
+        System.out.println(pClientIP+" / "+pClientPort+": "+pMessage);
         Spieler spieler = sucheClientNachIPUndPort(pClientIP, pClientPort);
         //System.out.println(spieler.gibName());
         if (spieler != null){
@@ -198,6 +199,32 @@ public class GameServer extends Server implements Zustand
                 }
             } else {
                 send(clientIP, clientPort, "ERR JOIN unknown option - expected game nr");
+            }
+        } else if (pMessage.startsWith("MOVE ")) {
+            //Ein Zug wurde gesendet
+            String[] stuecke = pMessage.split(" ");
+            if (stuecke.length == 5) {
+                //An Spielnr teilnehmen
+                int nr = Integer.parseInt(stuecke[1]);
+                spiele.toFirst();
+                while (spiele.hasAccess() && spiele.getContent().gibSpielNr()!=nr) {
+                    spiele.next();
+                }
+                if(spiele.hasAccess()) {
+                    Position pos1 = new Position(stuecke[2]);
+                    Position pos2 = new Position(stuecke[3]);
+                    Position pos3 = new Position(stuecke[4]);
+                    if (spiele.getContent().schiebe(pos1, pos2, new Vektor(pos1,pos3), pClient)) {
+                        send(clientIP, clientPort, "+legal Move");
+                        spiele.getContent().sendeSpielfeldAnAlle();
+                    } else {
+                        send(clientIP, clientPort, "-illegal Move");
+                    }
+                } else {
+                    send(clientIP, clientPort, "-no such game number");
+                }
+            } else {
+                send(clientIP, clientPort, "ERR MOVE wrong format - expected MOVE gnr pos1 pos2 pos3");
             }
         } else {
             send(clientIP, clientPort, "ERR invalid command");

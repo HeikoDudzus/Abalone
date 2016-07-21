@@ -12,7 +12,8 @@ public class NRWClient extends Client
     }
     
     public void processMessage(String antwort){
-        ausgabe.textAusgeben(antwort);
+        ausgabe.verarbeite(antwort);
+        //ausgabe.textAusgeben(antwort);
     }
 
     public void execServerCmd(String nachricht){

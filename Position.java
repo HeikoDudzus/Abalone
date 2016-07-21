@@ -52,4 +52,11 @@ public class Position
     public boolean zulaessig() {
         return (x > 0 && x <=9 && y>=0 && y <= 9 && (x>3 || y-x >= 4) && (x < 6 || x-y >=4));
     }
+    
+    /**
+     * toString gibt die Position in menschenlesbarer Notation aus
+     */
+    public String toString() {
+        return "" + (char)('A'-1+y) + x;
+    }
 }

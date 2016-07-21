@@ -108,6 +108,6 @@ public class Spieler implements Zustand
     }
     
     public void send (String pMessage) {
-        myGameServer.send(ip, port, pMessage);
+        if (myGameServer != null) myGameServer.send(ip, port, pMessage);
     }
 }

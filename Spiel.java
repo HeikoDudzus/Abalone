@@ -54,7 +54,6 @@ public class Spiel implements Zustand
             }
         }
 
-
     }
 
     /**
@@ -343,7 +342,7 @@ public class Spiel implements Zustand
     public boolean beideSpielerWeg() {
         return spielerListe.isEmpty();
     }
-    
+
     /**
      * isJoinable prueft ob ein zweiter Spieler an dem spiel teilnehmen 
      * kann (wenn also bisher nur ein Spieler vorhanden ist)
@@ -356,13 +355,13 @@ public class Spiel implements Zustand
         if (!spielerListe.hasAccess()) return true;
         return false;
     }
-    
+
     public boolean join(Spieler pSpieler2) {
         if (!isJoinable()) return false;
         spielerListe.toFirst();
         Spieler pSpieler1 = spielerListe.getContent();
         spielerListe.append(pSpieler2);
-        
+
         // Startpositionen belegen
         for (int spalte = 1; spalte <=5; spalte++) {
             spielfeld[1][spalte].setzeStein(new Stein(pSpieler1));
@@ -382,10 +381,14 @@ public class Spiel implements Zustand
             pSpieler1.erhalteStein();
             pSpieler2.erhalteStein();
         }
-        
+
         spielLaeuft = true;
-        
+
         //beiden Spielern das Spielfeld senden
+        if (gibSpielerNr(1)!= null && gibSpielerNr(2) !=null) {
+            this.sendeSpielfeld(gibSpielerNr(1));
+            this.sendeSpielfeld(gibSpielerNr(2));
+        }
         return true;
     }
 
@@ -402,9 +405,50 @@ public class Spiel implements Zustand
         }
         return null;
     }
-    
+
     public int gibSpielNr() {
         return spielNr;
+    }
+
+    /**
+     * sendet dem uebergebenen Spieler das Spielfeld
+     */
+    public void sendeSpielfeld(Spieler pSpieler) {
+        //evtl. diesen Pfeil fuer mehrzeilige rücksendungen
+        //diese enden dann mit >end <typ>
+        pSpieler.send(">GAME "+spielNr);
+        Spieler sp1 = gibSpielerNr(1);
+        Spieler sp2 = gibSpielerNr(2);
+        pSpieler.send("> "+sp1.gibName() +" vs "+sp2.gibName());
+        pSpieler.send("> "+!sp1.hatVerloren()+" : "+!sp2.hatVerloren());
+        pSpieler.send(">ACTIVE "+"?");
+        spielerListe.toFirst();
+        for (int zeile = 9; zeile > 0; zeile--) {
+            String temp = ">"+zeile+" "+ (char)('A'+zeile-1)+" ";
+            for (int spalte = 1; spalte < 10; spalte++) {
+                Stein stein = spielfeld[zeile][spalte].gibStein();
+                if (stein == null) {
+                    temp +="0 ";
+                } else {
+                    if (stein.gibBesitzer() == spielerListe.getContent()) {
+                        temp+="1 ";
+                    } else {
+                        temp+="2 ";
+                    }
+                }
+            }
+            pSpieler.send(temp);
+        }
+        pSpieler.send(">      1 2 3 4 5 6 7 8 9");
+        pSpieler.send(">end GAME");
+    }
+
+    /**
+     * sendet das Spielfeld an Alle
+     */
+    public void sendeSpielfeldAnAlle() {
+            this.sendeSpielfeld(gibSpielerNr(1));
+            this.sendeSpielfeld(gibSpielerNr(2));
     }
 
 }

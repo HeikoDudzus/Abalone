@@ -6,9 +6,14 @@ import java.util.HashMap;
 /**
  *
  * Beschreibung
+ * In dieser GUI wird die Verbindung zum Server aufgebaut und
+ * bearbeitet (dazu wird der Client aus dem NRW-Abitur genutzt)
+ * Die GUI macht zudem auch die Datenhaltung (welche Spiele 
+ * werden genutzt und gezeigt; muss eine neue AbalonespielGUI
+ * gestartet werden usw.)
  *
- * @version 1.0 vom 01.01.2016
- * @author 
+ * @version 0.1 vom 21.07.2016
+ * @author scholl@unterrichtsportal.org
  */
 
 public class ClientGUI extends JFrame {
@@ -28,6 +33,8 @@ public class ClientGUI extends JFrame {
     // Ende Gui-Attribute
     //int spieltyp=0; //0-Einzel, 1-Versus, 2-Team - TODO Sollte eigentlich weg
     private NRWClient nrwclient;
+    private String mehrZeilenBuffer = "";
+    private boolean mehrZeilenBufferAn = false;
     private boolean isConnected = false;
     private int participatesInGame = -1; //GameNummer, -1 wenn kein Spiel
     private boolean isPlaying = false; //Spielt gerade ein Spiel
@@ -35,6 +42,7 @@ public class ClientGUI extends JFrame {
     private boolean adjustScrollbar = true; //Trigger f�r aktualisierung der Scrollbar
     //folgende HashMap soll die Liste der Spiele aufnehmen, die man Joinen kann (ComboBox)
     private HashMap<Integer,String> offenespiele = new HashMap<Integer,String>();
+    private HashMap<Integer,AbaloneGUI> gezeigteSpiele = new HashMap<Integer,AbaloneGUI>();
 
     private JButton jButton5 = new JButton();
     private JButton jButton6 = new JButton();
@@ -90,16 +98,14 @@ public class ClientGUI extends JFrame {
                 }
             });
         cp.add(jButton4);
-        
+
         tA1 = new JTextArea();
         tA1.setEditable(false);
         JScrollPane sP1 = new JScrollPane(tA1);
         sP1.setBounds(16, 296, 305, 113);
         sP1.setBackground(new Color(255, 255, 255));
         cp.add(sP1);
-        
-                
-        
+
         cp.setBackground(Color.WHITE);
         jButton5.setBounds(16, 271, 73, 18);
         jButton5.setText("Leave");
@@ -192,7 +198,6 @@ public class ClientGUI extends JFrame {
         new ClientGUI();
     } // end of main
 
-
     public void jButton4_ActionPerformed(ActionEvent evt) { //Create
         //Spiel wird erzeugt
         nrwclient.execServerCmd("c");
@@ -203,11 +208,11 @@ public class ClientGUI extends JFrame {
     } // end of jButton5_ActionPerformed
 
     public void jButton6_ActionPerformed(ActionEvent evt) { //Join
-        //pr�fen ob auswahl getroffen wurde
+        //pruefen ob auswahl getroffen wurde
         int index = spielAuswahl.getSelectedIndex();
         if (index == -1) {
             //evtl. als Messagebox
-            System.out.println("Kein Spiel ausgew�hlt oder kein Spiel in der Liste - Liste aktualisieren");
+            System.out.println("Kein Spiel ausgewaehlt oder kein Spiel in der Liste - Liste aktualisieren");
         } else {
             String spiel = (String)spielAuswahl.getSelectedItem();
             String[] spielNr = spiel.split(" ");
@@ -270,11 +275,11 @@ public class ClientGUI extends JFrame {
         // Updates der Liste m�ssen wohl durch den EventDispatcherThread
         // ausgef�hrt werden (was auch immer das ist)
         // von http://www.java-forum.org/thema/jlist-defaultlistmodel-race-condition.73198/
-        
+
         tA1.append(pText+"\n");
         int len = tA1.getDocument().getLength();
         tA1.setCaretPosition(len);
-        
+
         //this.repaint();
     }
 
@@ -296,7 +301,7 @@ public class ClientGUI extends JFrame {
 
     /**
      * setGameNr setzt die Nr des Spiels an dem Teilgenommen wird
-     * -1 hei�t kein Spiel
+     * -1 heisst kein Spiel
      */
     public void setGameNr(int gNr) {
         participatesInGame = gNr;
@@ -326,7 +331,7 @@ public class ClientGUI extends JFrame {
     }
 
     /**
-     * setPlaying setzt den Zustand isPlaying auf den �bergebenen Wert
+     * setPlaying setzt den Zustand isPlaying auf den uebergebenen Wert
      */
     public void setPlaying(boolean pIsPlaying) {
         isPlaying=pIsPlaying;
@@ -334,7 +339,7 @@ public class ClientGUI extends JFrame {
     }
 
     /**
-     * setIsMaster setzt den Zustand isMaster auf den �bergebenen Wert
+     * setIsMaster setzt den Zustand isMaster auf den uebergebenen Wert
      * also true, wenn dieser Spieler der Leiter des Spiels ist
      */
     public void setIsMaster(boolean pIsMaster) {
@@ -343,14 +348,14 @@ public class ClientGUI extends JFrame {
     }    
 
     /**
-     * resetGameList setzt die Liste der offenen Spiele zur�ck
+     * resetGameList setzt die Liste der offenen Spiele zurueck
      */
     public void resetGameList() {
         spielAuswahl.removeAllItems();
     }
 
     /**
-     * addGameListEntry setzt die Liste der offenen Spiele zur�ck
+     * addGameListEntry setzt die Liste der offenen Spiele zurueck
      */
     public void addGameListEntry(String pGameString) {
         spielAuswahl.addItem(pGameString);
@@ -364,4 +369,61 @@ public class ClientGUI extends JFrame {
         jList1ScrollPane.getVerticalScrollBar().setValue(jList1ScrollPane.getVerticalScrollBar().getMaximum());
     }
 
+    public void verarbeite(String pMessage) {
+        System.out.println("verarbeite: "+pMessage);
+        if (pMessage.startsWith("+NICKIS")) {
+            //jetzt sollte das Passwort gesendet werden
+        } else if (mehrZeilenBufferAn && pMessage.startsWith(">") && !pMessage.startsWith(">end")){
+            //System.out.println("anhaengen: "+pMessage);
+            mehrZeilenBuffer = mehrZeilenBuffer.concat(pMessage+"\n");
+        } else if (pMessage.startsWith(">GAME")) {
+            //Spielstand wird gesendet bis >end GAME
+            mehrZeilenBuffer = pMessage+"\n";
+            mehrZeilenBufferAn = true;
+        } else if (pMessage.startsWith(">end GAME")) {
+            //Hier wurde ein Buffer beendet
+            if (mehrZeilenBufferAn) {
+                mehrZeilenBufferAn=false;
+                System.out.println(mehrZeilenBuffer);
+                //try {
+                    String[] input = mehrZeilenBuffer.split("\n");
+                    int gameNr = Integer.parseInt(input[0].substring(6));
+                    //Achtung: Hoffentlich heißt niemand vs
+                    String nameSp1 = input[1].substring(3).split(" vs ")[0];
+                    String nameSp2 = input[1].substring(3).split(" vs ")[1];
+                    int[][] sfeld = new int[11][11];
+                    for (int i=4; i<13; i++) { // Feld Zeilenweise lesen
+                        for(int j=1; j<10; j++) {
+                            sfeld[i-3][j]=Integer.parseInt(input[i].split(" ")[j+1]);
+                        }
+                    }
+                if (gezeigteSpiele.containsKey(gameNr)) {
+                    AbaloneGUI t = gezeigteSpiele.get(gameNr);
+                    //Spielernamen usw. übergeben
+                    t.zeige(sfeld);
+                    
+                } else {
+                    AbaloneGUI t = new AbaloneGUI(this);
+                    t.setGameNr(gameNr);
+                    gezeigteSpiele.put(gameNr, t);
+                    t.zeige(sfeld);
+                }
+//                } catch (Exception ex) {
+//                    System.out.println("Spielformat fehlerhaft: "+ex.getStackTrace());
+//                }
+            } else {
+                System.out.println("Fehler GAME Buffer endet, ohne aktiv zu sein: "+pMessage);
+            }
+        } else if (pMessage.startsWith(">end ")) {
+            //Hier wurde ein Buffer beendet der nicht bekannt ist
+            System.out.println("Fehler Unbekannter Buffer: "+pMessage);
+        } else {
+            //sinnlose Info
+            this.textAusgeben(pMessage);
+        }        
+    }
+    
+    public void send(String pMessage) {
+        nrwclient.send(pMessage);
+    }
 } // end of class ClientGUI
