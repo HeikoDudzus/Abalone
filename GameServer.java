@@ -170,13 +170,15 @@ public class GameServer extends Server implements Zustand
             String[] stuecke = pMessage.split(" ");
             if (stuecke.length > 0 && stuecke[1].equals("OPEN")) {
                 //Liste der offenen Spiele zurückgeben
-                send(clientIP, clientPort, "+LIST OPEN GAMES");
+                send(clientIP, clientPort, ">LIST OPEN GAMES");
                 spiele.toFirst();
                 while (spiele.hasAccess()) {
-                    send(clientIP, clientPort, "+GAME "+spiele.getContent().gibSpielNr()+" OPEN: "+spiele.getContent().gibSpielerNr(1).gibName());
+                    if (spiele.getContent().isJoinable()) {
+                        send(clientIP, clientPort, "> "+spiele.getContent().gibSpielNr()+" OPEN: "+spiele.getContent().gibSpielerNr(1).gibName());
+                    }
                     spiele.next();
                 }
-                send(clientIP,clientPort, "+END");
+                send(clientIP,clientPort, ">end LIST OPEN GAMES");
 
             } else {
                 send(clientIP, clientPort, "ERR SHOW unknown option");
@@ -184,16 +186,15 @@ public class GameServer extends Server implements Zustand
         } else if (pMessage.startsWith("JOIN ")) {
             //An einem Spiel Teilnehmen
             String[] stuecke = pMessage.split(" ");
-            if (stuecke.length > 0) {
+            if (stuecke.length > 1) {
                 //An Spielnr teilnehmen
                 int nr = Integer.parseInt(stuecke[1]);
                 spiele.toFirst();
                 while (spiele.hasAccess() && spiele.getContent().gibSpielNr()!=nr) {
                     spiele.next();
                 }
-                if (spiele.hasAccess() && spiele.getContent().isJoinable()) { // Spiel gefunden
+                if (spiele.hasAccess() && spiele.getContent().join(pClient)) { // Spiel gefunden
                     send(clientIP, clientPort, "+GAME "+nr+" joined");
-                    spiele.getContent().join(pClient);
                 } else {
                     send(clientIP, clientPort, "ERR game "+nr+" not found or not joinable");
                 }

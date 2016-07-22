@@ -200,11 +200,11 @@ public class ClientGUI extends JFrame {
 
     public void jButton4_ActionPerformed(ActionEvent evt) { //Create
         //Spiel wird erzeugt
-        nrwclient.execServerCmd("c");
+        nrwclient.execServerCmd("CREATE");
     } // end of jButton4_ActionPerformed
 
     public void jButton5_ActionPerformed(ActionEvent evt) { //Leave
-        nrwclient.execServerCmd("q");
+        nrwclient.execServerCmd("QUIT");
     } // end of jButton5_ActionPerformed
 
     public void jButton6_ActionPerformed(ActionEvent evt) { //Join
@@ -217,7 +217,7 @@ public class ClientGUI extends JFrame {
             String spiel = (String)spielAuswahl.getSelectedItem();
             String[] spielNr = spiel.split(" ");
             if (spielNr.length>0) {
-                nrwclient.execServerCmd("j "+spielNr[0]);
+                nrwclient.execServerCmd("JOIN "+spielNr[1]);
             } else {
                 System.out.println("FEHLER: Spielnummer konnte nicht ermittelt werden");
             }
@@ -229,7 +229,7 @@ public class ClientGUI extends JFrame {
     } // end of jButton6_ActionPerformed
 
     public void jButton2_ActionPerformed(ActionEvent evt) { //Aktualisiere offene Spiele
-        nrwclient.execServerCmd("l o");
+        nrwclient.execServerCmd("SHOW OPEN");
     } // end of jButton6_ActionPerformed
 
     public void jButton7_ActionPerformed(ActionEvent evt) {
@@ -376,6 +376,27 @@ public class ClientGUI extends JFrame {
         } else if (mehrZeilenBufferAn && pMessage.startsWith(">") && !pMessage.startsWith(">end")){
             //System.out.println("anhaengen: "+pMessage);
             mehrZeilenBuffer = mehrZeilenBuffer.concat(pMessage+"\n");
+        } else if (pMessage.startsWith(">LIST")) {
+            //Liste wird gesendet bis >end LIST ...
+            mehrZeilenBuffer = pMessage+"\n";
+            mehrZeilenBufferAn = true;
+        } else if (pMessage.startsWith(">end LIST OPEN GAMES")) {
+            //Hier wurde ein Buffer beendet
+            if (mehrZeilenBufferAn) {
+                mehrZeilenBufferAn=false;
+                System.out.println(mehrZeilenBuffer);
+                try {
+                    this.resetGameList();
+                    String[] input = mehrZeilenBuffer.split("\n");
+                    for (int i=1; i<input.length; i++) {
+                        this.addGameListEntry(input[i].substring(1));
+                    }
+                } catch (Exception ex) {
+                    System.out.println("LIST OPEN GAMES-format fehlerhaft: "+ex.getStackTrace());
+                }
+            } else {
+                System.out.println("Fehler LIST OPEN GAMES Buffer endet, ohne aktiv zu sein: "+pMessage);
+            }
         } else if (pMessage.startsWith(">GAME")) {
             //Spielstand wird gesendet bis >end GAME
             mehrZeilenBuffer = pMessage+"\n";
@@ -385,10 +406,9 @@ public class ClientGUI extends JFrame {
             if (mehrZeilenBufferAn) {
                 mehrZeilenBufferAn=false;
                 System.out.println(mehrZeilenBuffer);
-                //try {
+                try {
                     String[] input = mehrZeilenBuffer.split("\n");
                     int gameNr = Integer.parseInt(input[0].substring(6));
-                    //Achtung: Hoffentlich heißt niemand vs
                     String nameSp1 = input[1].substring(9);
                     String nameSp2 = input[2].substring(9);
                     int[][] sfeld = new int[11][11];
@@ -397,20 +417,20 @@ public class ClientGUI extends JFrame {
                             sfeld[i-4][j]=Integer.parseInt(input[i].split(" ")[j+1]);
                         }
                     }
-                if (gezeigteSpiele.containsKey(gameNr)) {
-                    AbaloneGUI t = gezeigteSpiele.get(gameNr);
-                    //Spielernamen usw. übergeben
-                    t.zeige(sfeld);
-                    
-                } else {
-                    AbaloneGUI t = new AbaloneGUI(this);
-                    t.setGameNr(gameNr);
-                    gezeigteSpiele.put(gameNr, t);
-                    t.zeige(sfeld);
+                    if (gezeigteSpiele.containsKey(gameNr)) {
+                        AbaloneGUI t = gezeigteSpiele.get(gameNr);
+                        //Spielernamen usw. übergeben
+                        t.zeige(sfeld);
+
+                    } else {
+                        AbaloneGUI t = new AbaloneGUI(this);
+                        t.setGameNr(gameNr);
+                        gezeigteSpiele.put(gameNr, t);
+                        t.zeige(sfeld);
+                    }
+                } catch (Exception ex) {
+                    System.out.println("Spielformat fehlerhaft: "+ex.getStackTrace());
                 }
-//                } catch (Exception ex) {
-//                    System.out.println("Spielformat fehlerhaft: "+ex.getStackTrace());
-//                }
             } else {
                 System.out.println("Fehler GAME Buffer endet, ohne aktiv zu sein: "+pMessage);
             }
@@ -422,9 +442,9 @@ public class ClientGUI extends JFrame {
             this.textAusgeben(pMessage);
         }        
     }
-    
+
     public void send(String pMessage) {
         nrwclient.send(pMessage);
     }
-    
+
 } // end of class ClientGUI

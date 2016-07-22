@@ -359,6 +359,7 @@ public class Spiel implements Zustand
 
     public boolean join(Spieler pSpieler2) {
         if (!isJoinable()) return false;
+        if (spielerListe[0]==pSpieler2) return false;
         Spieler pSpieler1 = spielerListe[0];
         spielerListe[1]=pSpieler2;
 
