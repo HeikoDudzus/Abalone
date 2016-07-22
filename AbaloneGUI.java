@@ -28,11 +28,13 @@ import javax.swing.event.*;
 
 public class AbaloneGUI extends JFrame implements ActionListener { //ActionListener erst mal weglassen
     // Anfang Attribute
-    private SpielfeldPanel sfeldPanel = new SpielfeldPanel(); //Das Spielfeld
+    private SpielfeldPanel sfeldPanel = new SpielfeldPanel(this); //Das Spielfeld
     private JTextField textfeld, tfBefehl;
     private JTextArea tA1;
     private JScrollPane sp1;
     private JButton button1, bSendCmd;
+    private JPanel southPanel;
+    private JCheckBox cbInstantmove;
     private Spiel spiel;
     private int gameNr; //SpielNr auf dem Server
     private ClientGUI myClientGUI = null; //ClientGUI von der das Brett gestartet wurde 
@@ -46,46 +48,63 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     public AbaloneGUI() { 
         // Frame-Initialisierung
         super("Abalone GUI - Test");
-        //setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        // Was soll auf Exit passieren - TODO muss noch geändert werden, dass nur das Spiel
+        // verlassen wird
+        addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent evt) {
+                    myClientGUI.removeAbaloneGUI(gameNr);
+                    //System.exit(0);
+                }
+            }
+        );
         setSize(600,800);  //Breite und Hoehe des Frames
-        setResizable(false);
+        setResizable(true);
         Container cp = getContentPane();  //Container des Frames holen um ihn zu f�llen
-        cp.setLayout(null); //kein automatisches Layout der Objekte
+        cp.setLayout(new BorderLayout()); //BorderLayout
         // Anfang Komponenten
-        sfeldPanel= new SpielfeldPanel();
-        sfeldPanel.setLocation(45,50); //x - y Koordinate
+        sfeldPanel= new SpielfeldPanel(this);
+        //sfeldPanel.setLocation(45,50); //x - y Koordinate
         sfeldPanel.setSize(420,360);   // breite und H�he
         sfeldPanel.addMouseListener(sfeldPanel);
-        cp.add(sfeldPanel); //Spielfeld zum Container hinzuf�gen
+        cp.add(sfeldPanel, BorderLayout.CENTER); //Spielfeld zum Container hinzuf�gen
 
         textfeld = new JTextField();
         textfeld.setBounds(10,10,280,20);
         textfeld.setText("Ausgabefeld");
-        cp.add(textfeld);
+        cp.add(textfeld,BorderLayout.NORTH);
+
+        southPanel = new JPanel();
+        southPanel.setLayout(new FlowLayout());
+
+        cbInstantmove = new JCheckBox("InstantMove");
+        cbInstantmove.setEnabled(true);
+        southPanel.add(cbInstantmove);
 
         button1 = new JButton();
-        button1.setBounds(20, 440, 120, 20);
+        //button1.setBounds(20, 440, 120, 20);
         button1.setText("Ziehe");
         button1.addActionListener(this);
-        cp.add(button1);
+        southPanel.add(button1);
 
-        tA1 = new JTextArea();
-        tA1.setEditable(false);
-        JScrollPane sP1 = new JScrollPane(tA1);
-        sP1.setBounds(20, 470, 420, 100);
-        sP1.setBackground(new Color(255, 255, 255));
-        cp.add(sP1);
+        tfBefehl = new JTextField() {
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(300, 25);
+            }
+        };
 
-        tfBefehl = new JTextField();
-        tfBefehl.setBounds(20, 580, 300, 25);
+        tfBefehl.setText("Befehl hier eingeben");
+        //tfBefehl.setBounds(20, 580, 300, 25);
+        tfBefehl.setSize(300,25);
         tfBefehl.addActionListener(new ActionListener() { 
                 public void actionPerformed(ActionEvent evt) { 
                     bSendCmd_ActionPerformed(evt);
                 }
             });
-        cp.add(tfBefehl);
+        southPanel.add(tfBefehl);
         bSendCmd = new JButton();
-        bSendCmd.setBounds(330, 580, 90, 25);
+        //bSendCmd.setBounds(330, 580, 90, 25);
         bSendCmd.setText("SendCmd");
         bSendCmd.setMargin(new Insets(2, 2, 2, 2));
         bSendCmd.addActionListener(new ActionListener() { 
@@ -93,10 +112,12 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
                     bSendCmd_ActionPerformed(evt);
                 }
             });
-        cp.add(bSendCmd);        
+        southPanel.add(bSendCmd);        
 
+        cp.add(southPanel, BorderLayout.SOUTH);
         // Ende Komponenten
-        setVisible(true);
+        this.pack();
+        this.setVisible(true);
     } // end of public VierGUI
 
     /**
@@ -112,25 +133,7 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         Object source = e.getSource(); //Quelle der Action ermitteln
         if (source == button1) {
             //Zug ziehen
-            if (sfeldPanel.gibZug() != null) {
-                // es wurden drei Felder ausgewählt
-                Position[] felder = sfeldPanel.gibZug();
-                int spielerNr = sfeldPanel.gibSpielerDesZuges();
-                System.out.println("Pos1: "+felder[0].gibX()+", "+felder[0].gibY());
-                System.out.println("Pos2: "+felder[1].gibX()+", "+felder[1].gibY());
-                System.out.println("Pos3: "+felder[2].gibX()+", "+felder[2].gibY());
-                System.out.println("SpielerNr: "+spielerNr);
-                if (spiel!= null) System.out.println("Name: "+spiel.gibSpielerNr(spielerNr).gibName());
-
-                if (myClientGUI != null) {
-                    //Zug an Server schicken
-                    myClientGUI.send("MOVE "+gameNr+" "+felder[0]+" "+felder[1]+" "+felder[2]);
-                } else {
-                    //lokales Spiel
-                    System.out.println(spiel.schiebe(felder[0], felder[1], new Vektor(felder[0],felder[2]), spiel.gibSpielerNr(spielerNr)));
-                    this.zeigeSpiel();
-                }
-            }
+            ziehe();
             // } else if  (source == button2) { //gibt es noch nicht
         } 
     }
@@ -167,7 +170,36 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         System.out.println("Sende Commando:"+tfBefehl.getText());
         tfBefehl.setText("");
     } // end of bSendCmd_ActionPerformed    
-    
+
     public void setGameNr(int pGameNr) { gameNr = pGameNr; }
+
+    public void moveCompleted() {
+        if (cbInstantmove.isSelected()) {
+            ziehe();
+            sfeldPanel.markierungenEntfernen();
+        }
+    }
+
+    public void ziehe() {
+        if (sfeldPanel.gibZug() != null) {
+            // es wurden drei Felder ausgewählt
+            Position[] felder = sfeldPanel.gibZug();
+            int spielerNr = sfeldPanel.gibSpielerDesZuges();
+            System.out.println("Pos1: "+felder[0].gibX()+", "+felder[0].gibY());
+            System.out.println("Pos2: "+felder[1].gibX()+", "+felder[1].gibY());
+            System.out.println("Pos3: "+felder[2].gibX()+", "+felder[2].gibY());
+            System.out.println("SpielerNr: "+spielerNr);
+            if (spiel!= null) System.out.println("Name: "+spiel.gibSpielerNr(spielerNr).gibName());
+
+            if (myClientGUI != null) {
+                //Zug an Server schicken
+                myClientGUI.send("MOVE "+gameNr+" "+felder[0]+" "+felder[1]+" "+felder[2]);
+            } else {
+                //lokales Spiel
+                System.out.println(spiel.schiebe(felder[0], felder[1], new Vektor(felder[0],felder[2]), spiel.gibSpielerNr(spielerNr)));
+                this.zeigeSpiel();
+            }
+        }
+    }
     // Ende Methoden
 } // end of class VierGUI

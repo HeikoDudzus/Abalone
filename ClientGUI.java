@@ -446,5 +446,9 @@ public class ClientGUI extends JFrame {
     public void send(String pMessage) {
         nrwclient.send(pMessage);
     }
+    
+    public void removeAbaloneGUI(Integer pGameNr) {
+        gezeigteSpiele.remove(pGameNr);
+    }
 
 } // end of class ClientGUI

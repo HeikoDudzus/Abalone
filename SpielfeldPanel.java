@@ -18,13 +18,15 @@ public class SpielfeldPanel extends JPanel implements MouseListener
     private Position pos3 = new Position(3,4);
     private int zustandPositionsClick = 0; // 0 noch nichts, 1 pos1 gewählt, 2 pos3 gewählt
     private int xposPressed, yposPressed;
+    private AbaloneGUI myAbaloneGUI;
 
     /**
      * Konstruktor fuer Objekte der Klasse SpielfeldPanel
      */
-    public SpielfeldPanel()
+    public SpielfeldPanel(AbaloneGUI pAG)
     {
         super(); // JPanel initialisieren
+        myAbaloneGUI = pAG;
     }
 
     @Override
@@ -73,6 +75,16 @@ public class SpielfeldPanel extends JPanel implements MouseListener
                 }
             } // end of for j 
         }  // end of for i          
+    }
+
+    /**
+     * Teile dem Layout-Manager mit, wie groß diese Komponente sein soll.
+     * 
+     * @return Die bevorzugte Größe (als Dimension) dieser Komponente.
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(600, 400);
     }
 
     public void zeige(int[][] pSpielfeld) {
@@ -141,7 +153,8 @@ public class SpielfeldPanel extends JPanel implements MouseListener
                 markierungen[xposPressed+1][yposPressed+1]=1;
                 markierungen[xposPressed+1][yposPressed+1]=2;
                 markierungen[xpos+1][ypos+1]=3;
-                zustandPositionsClick = 3;                
+                zustandPositionsClick = 3;   
+                myAbaloneGUI.moveCompleted();
             } else if (spielfeld[ypos+1][xpos+1]!=0) { //dort liegt eine Kugel - AChtung Tausch!!
                 markierungen[xpos+1][ypos+1]=1;
                 pos1 = new Position(xpos+1,9-ypos);
@@ -162,13 +175,11 @@ public class SpielfeldPanel extends JPanel implements MouseListener
                 markierungen[xpos+1][ypos+1]=3;
                 pos3 = new Position(xpos+1,9-ypos );
                 zustandPositionsClick++;
+                myAbaloneGUI.moveCompleted();
             }
             break;
             default:
-            markierungen[pos1.gibX()][10-pos1.gibY()]=0;
-            markierungen[pos2.gibX()][10-pos2.gibY()]=0;
-            markierungen[pos3.gibX()][10-pos3.gibY()]=0;
-            zustandPositionsClick=0;
+            this.markierungenEntfernen();
             break;
         }
         System.out.println("ZustandPositionsClick:"+zustandPositionsClick);
@@ -203,16 +214,22 @@ public class SpielfeldPanel extends JPanel implements MouseListener
         System.out.println("b:"+b);
         System.out.println("a:"+a);
         System.out.println("x: "+Math.round(a)+" y: "+Math.round(b));
-        
 
     }
 
     public void mouseClicked(java.awt.event.MouseEvent e) {
     }
-    
+
     public int gibSpielerDesZuges() {
         //TODO: Pruefen ob überhaupt Zug ausgewaehlt
         return spielfeld[10-pos1.gibY()][pos1.gibX()];
+    }
+
+    public void markierungenEntfernen() {
+        markierungen[pos1.gibX()][10-pos1.gibY()]=0;
+        markierungen[pos2.gibX()][10-pos2.gibY()]=0;
+        markierungen[pos3.gibX()][10-pos3.gibY()]=0;
+        zustandPositionsClick=0;
     }
 
 }
