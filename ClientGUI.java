@@ -389,12 +389,12 @@ public class ClientGUI extends JFrame {
                     String[] input = mehrZeilenBuffer.split("\n");
                     int gameNr = Integer.parseInt(input[0].substring(6));
                     //Achtung: Hoffentlich heißt niemand vs
-                    String nameSp1 = input[1].substring(3).split(" vs ")[0];
-                    String nameSp2 = input[1].substring(3).split(" vs ")[1];
+                    String nameSp1 = input[1].substring(9);
+                    String nameSp2 = input[2].substring(9);
                     int[][] sfeld = new int[11][11];
-                    for (int i=4; i<13; i++) { // Feld Zeilenweise lesen
+                    for (int i=5; i<14; i++) { // Feld Zeilenweise lesen
                         for(int j=1; j<10; j++) {
-                            sfeld[i-3][j]=Integer.parseInt(input[i].split(" ")[j+1]);
+                            sfeld[i-4][j]=Integer.parseInt(input[i].split(" ")[j+1]);
                         }
                     }
                 if (gezeigteSpiele.containsKey(gameNr)) {
@@ -426,4 +426,5 @@ public class ClientGUI extends JFrame {
     public void send(String pMessage) {
         nrwclient.send(pMessage);
     }
+    
 } // end of class ClientGUI
