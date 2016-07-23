@@ -63,8 +63,8 @@ public class ClientGUI extends JFrame {
         // Frame-Initialisierung
         super("Abalone-Client");
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        int frameWidth = 345; 
-        int frameHeight = 475;
+        int frameWidth = 640; 
+        int frameHeight = 500;
         setSize(frameWidth, frameHeight);
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (d.width - getSize().width) / 2;
@@ -79,32 +79,32 @@ public class ClientGUI extends JFrame {
         jLabel1.setText("Abalone-Client");
         jLabel1.setFont(new Font("Dialog", Font.BOLD, 16));
         cp.add(jLabel1);
-        jLabel3.setBounds(8, 104, 46, 20);
+        jLabel3.setBounds(8, 44, 46, 20);
         jLabel3.setText("Server:");
         cp.add(jLabel3);
-        jTextField1.setBounds(56, 104, 150, 20);
+        jTextField1.setBounds(56, 44, 150, 20);
         jTextField1.setText("localhost");
         cp.add(jTextField1);
-        jLabel4.setBounds(224, 104, 46, 20);
+        jLabel4.setBounds(224, 44, 46, 20);
         jLabel4.setText("Port:");
         cp.add(jLabel4);
-        jTextField2.setBounds(264, 104, 46, 20);
+        jTextField2.setBounds(264, 44, 46, 20);
         jTextField2.setText("55555");
         cp.add(jTextField2);
-        jLabel6.setBounds(8, 168, 46, 20);
+        jLabel6.setBounds(8, 108, 46, 20);
         jLabel6.setText("Login:");
         cp.add(jLabel6);
-        jTextField6.setBounds(56, 168, 95, 20);
+        jTextField6.setBounds(56, 108, 95, 20);
         jTextField6.setText("");
         cp.add(jTextField6);
-        jLabel7.setBounds(169, 168, 46, 20);
+        jLabel7.setBounds(169, 108, 46, 20);
         jLabel7.setText("Passwort:");
         cp.add(jLabel7);
-        jTextField7.setBounds(209, 168, 101, 20);
+        jTextField7.setBounds(209, 108, 101, 20);
         jTextField7.setText("");
         cp.add(jTextField7);
 
-        jButton4.setBounds(16, 248, 73, 18);
+        jButton4.setBounds(320, 44, 73, 18); //x+304 y-204
         jButton4.setText("Create");
         jButton4.setMargin(new Insets(2, 2, 2, 2));
         jButton4.addActionListener(new ActionListener() { 
@@ -117,12 +117,12 @@ public class ClientGUI extends JFrame {
         tA1 = new JTextArea();
         tA1.setEditable(false);
         JScrollPane sP1 = new JScrollPane(tA1);
-        sP1.setBounds(16, 296, 305, 113);
+        sP1.setBounds(16, 140, 610, 269);
         sP1.setBackground(new Color(255, 255, 255));
         cp.add(sP1);
 
         cp.setBackground(Color.WHITE);
-        jButton5.setBounds(16, 271, 73, 18);
+        jButton5.setBounds(320, 67, 73, 18);
         jButton5.setText("Leave");
         jButton5.setMargin(new Insets(2, 2, 2, 2));
         jButton5.addActionListener(new ActionListener() { 
@@ -132,7 +132,7 @@ public class ClientGUI extends JFrame {
             });
         jButton5.setEnabled(false);
         cp.add(jButton5);
-        jButton6.setBounds(94, 248, 73, 18);
+        jButton6.setBounds(398, 44, 73, 18);
         jButton6.setText("Join");
         jButton6.setMargin(new Insets(2, 2, 2, 2));
         jButton6.addActionListener(new ActionListener() { 
@@ -141,7 +141,7 @@ public class ClientGUI extends JFrame {
                 }
             });
         cp.add(jButton6);
-        jButton1.setBounds(94, 271, 73, 18);
+        jButton1.setBounds(398, 67, 73, 18);
         jButton1.setText("Start");
         jButton1.setMargin(new Insets(2, 2, 2, 2));
         jButton1.addActionListener(new ActionListener() { 
@@ -153,10 +153,10 @@ public class ClientGUI extends JFrame {
         //JComboBox f�r Spieleintr�ge wird erstellt
         spielAuswahl = new JComboBox(comboBoxListe);
         //JComboBox wird Panel hinzugef�gt
-        spielAuswahl.setBounds(172,249,151,18);
+        spielAuswahl.setBounds(476,45,151,18);
         cp.add(spielAuswahl);
 
-        jButton2.setBounds(172, 271, 73, 18);
+        jButton2.setBounds(476, 67, 73, 18);
         jButton2.setText("OffeneSpiele");
         jButton2.setMargin(new Insets(2, 2, 2, 2));
         jButton2.addActionListener(new ActionListener() { 
@@ -182,13 +182,13 @@ public class ClientGUI extends JFrame {
                 }
             });
         cp.add(jButton7);
-        jLabel14.setBounds(8, 136, 46, 20);
+        jLabel14.setBounds(8, 76, 46, 20);
         jLabel14.setText("Status:");
         cp.add(jLabel14);
-        jTextField10.setBounds(56, 136, 150, 20);
+        jTextField10.setBounds(56, 76, 150, 20);
         jTextField10.setText("not connected");
         cp.add(jTextField10);
-        jButton8.setBounds(232, 136, 75, 20);
+        jButton8.setBounds(232, 76, 75, 20);
         jButton8.setText("Connect");
         jButton8.setMargin(new Insets(2, 2, 2, 2));
         jButton8.addActionListener(new ActionListener() { 

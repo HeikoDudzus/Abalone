@@ -150,6 +150,12 @@ public class GameServer extends Server implements Zustand
             }
             if (pClient.isGuest()) loescheSpieler(pClient);
             closeConnection(clientIP, clientPort);
+        } else if (pMessage.startsWith("HELP")) {
+            if (pMessage.length()>5) {
+                send(clientIP, clientPort, Hilfetext.gibHilfeZu(pMessage.substring(5)));
+            } else {
+                send(clientIP, clientPort, Hilfetext.gibHilfeZu(""));                
+            }
         } else if (pMessage.startsWith("PASSWD ")) {
             String[] stuecke = pMessage.split(" ");
             if (stuecke.length > 1 && stuecke[1].matches("[A-z]+")) {
