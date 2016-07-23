@@ -58,8 +58,11 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         // verlassen wird
         addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent evt) {
-                    myClientGUI.removeAbaloneGUI(gameNr);
-                    //System.exit(0);
+                    if (myClientGUI!= null) {
+                        myClientGUI.removeAbaloneGUI(gameNr);
+                    } else { //lokales Spiel
+                        System.exit(0);
+                    }
                 }
             }
         );
@@ -211,6 +214,7 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         if (sfeldPanel.gibZug() != null && gewinner == 0) {
             // es wurden drei Felder ausgewählt und noch niemand hat gewonnen
             Position[] felder = sfeldPanel.gibZug();
+
             int spielerNr = sfeldPanel.gibSpielerDesZuges();
             System.out.println("Pos1: "+felder[0].gibX()+", "+felder[0].gibY());
             System.out.println("Pos2: "+felder[1].gibX()+", "+felder[1].gibY());
@@ -282,7 +286,7 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         sfeldPanel.setBoardFlipped(boardFlipped);
         this.repaint();
     }
-    
+
     public void setzeSpielerAmZug(int pNr) {
         sfeldPanel.setSpielerAmZug(pNr);
     }

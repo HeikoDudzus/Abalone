@@ -185,7 +185,8 @@ public class SpielfeldPanel extends JPanel implements MouseListener
                 markierungen[xpos+1][ypos+1]=3;
                 zustandPositionsClick = 3;   
                 myAbaloneGUI.moveCompleted();
-            } else if (spielfeld[ypos+1][xpos+1]!=0) { //dort liegt eine Kugel - AChtung Tausch!!
+            } else if ((spielfeld[ypos+1][xpos+1]!=0 && !boardFlipped) ||
+                       (spielfeld[9-ypos][9-xpos]!=0 && boardFlipped)) { //dort liegt eine Kugel - AChtung Tausch!!
                 markierungen[xpos+1][ypos+1]=1;
                 pos1 = new Position(xpos+1,9-ypos);
                 zustandPositionsClick++;
@@ -252,7 +253,12 @@ public class SpielfeldPanel extends JPanel implements MouseListener
 
     public int gibSpielerDesZuges() {
         //TODO: Pruefen ob überhaupt Zug ausgewaehlt
-        return spielfeld[10-pos1.gibY()][pos1.gibX()];
+        if (!boardFlipped) {
+            return spielfeld[10-pos1.gibY()][pos1.gibX()];
+        } else {
+            return spielfeld[10-pos1.flipped().gibY()][pos1.flipped().gibX()];
+        }
+        //return spielerAmZug;
     }
 
     public void markierungenEntfernen() {
