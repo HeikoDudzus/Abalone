@@ -36,10 +36,7 @@ public class ClientGUI extends JFrame {
     private String mehrZeilenBuffer = "";
     private boolean mehrZeilenBufferAn = false;
     private boolean isConnected = false;
-    private int participatesInGame = -1; //GameNummer, -1 wenn kein Spiel
-    private boolean isPlaying = false; //Spielt gerade ein Spiel
-    private boolean isMaster = false; //Ist Master des Spiels
-    private boolean adjustScrollbar = true; //Trigger f�r aktualisierung der Scrollbar
+    private String meinName = "";
     //folgende HashMap soll die Liste der Spiele aufnehmen, die man Joinen kann (ComboBox)
     private HashMap<Integer,String> offenespiele = new HashMap<Integer,String>();
     private HashMap<Integer,AbaloneGUI> gezeigteSpiele = new HashMap<Integer,AbaloneGUI>();
@@ -55,6 +52,11 @@ public class ClientGUI extends JFrame {
     private JLabel jLabel14 = new JLabel();
     private JTextField jTextField10 = new JTextField();
     private JButton jButton8 = new JButton();
+    //Label und Textfelder fuer Autologin
+    private JTextField jTextField6 = new JTextField();
+    private JLabel jLabel6 = new JLabel();
+    private JTextField jTextField7 = new JTextField();
+    private JLabel jLabel7 = new JLabel();
     // Ende Attribute
 
     public ClientGUI() { 
@@ -89,6 +91,19 @@ public class ClientGUI extends JFrame {
         jTextField2.setBounds(264, 104, 46, 20);
         jTextField2.setText("55555");
         cp.add(jTextField2);
+        jLabel6.setBounds(8, 168, 46, 20);
+        jLabel6.setText("Login:");
+        cp.add(jLabel6);
+        jTextField6.setBounds(56, 168, 95, 20);
+        jTextField6.setText("");
+        cp.add(jTextField6);
+        jLabel7.setBounds(169, 168, 46, 20);
+        jLabel7.setText("Passwort:");
+        cp.add(jLabel7);
+        jTextField7.setBounds(209, 168, 101, 20);
+        jTextField7.setText("");
+        cp.add(jTextField7);
+
         jButton4.setBounds(16, 248, 73, 18);
         jButton4.setText("Create");
         jButton4.setMargin(new Insets(2, 2, 2, 2));
@@ -245,11 +260,14 @@ public class ClientGUI extends JFrame {
 
     public void jButton8_ActionPerformed(ActionEvent evt) {
         // Connect / Disconnect-Button
-        if (!isConnected) {
+        if (!isConnected) { //Connect
             setConnected(false);
             if (nrwclient == null || !nrwclient.isConnected()) {
                 try {
                     nrwclient = new NRWClient(jTextField1.getText(),Integer.parseInt(jTextField2.getText()), this);
+                    if (jTextField6.getText().length()>0) { //Login vorhanden
+                        nrwclient.execServerCmd("NICK "+jTextField6.getText());
+                    }
 
                     //Thread thread = new Thread(client);
                     //thread.start();
@@ -292,19 +310,7 @@ public class ClientGUI extends JFrame {
             jTextField10.setText("not connected");
             jButton8.setText("Connect");
             isConnected=false;
-            isMaster=false;
-            participatesInGame=-1;
-            isPlaying=false;
         }
-        setButtonActiveDeActive();
-    }
-
-    /**
-     * setGameNr setzt die Nr des Spiels an dem Teilgenommen wird
-     * -1 heisst kein Spiel
-     */
-    public void setGameNr(int gNr) {
-        participatesInGame = gNr;
         setButtonActiveDeActive();
     }
 
@@ -314,38 +320,21 @@ public class ClientGUI extends JFrame {
      */
     public void setButtonActiveDeActive() {
         //Button 4 - Create nur Active wenn isConnected und !participatesInGame
-        jButton4.setEnabled(isConnected && participatesInGame==-1);
+        jButton4.setEnabled(isConnected);
 
         //Button 5 - Leave nur Active wenn isConnected
         jButton5.setEnabled(isConnected);
 
         //jButton 6 - Join nur Active wenn isConnected und !participatesInGame
-        jButton6.setEnabled(isConnected && participatesInGame==-1);
+        jButton6.setEnabled(isConnected);
 
         //Button 1 - Start nur Active wenn isMaster und participatesInGame und nicht spielt
-        jButton1.setEnabled(isMaster && participatesInGame>=0 && !isPlaying);
+        jButton1.setEnabled(false);
 
         //Button 2 - OpenGames aktualisieren nur wenn nicht an Spiel teilgenommen wird und Connected
-        jButton2.setEnabled(isConnected && participatesInGame==-1);
+        jButton2.setEnabled(isConnected);
 
     }
-
-    /**
-     * setPlaying setzt den Zustand isPlaying auf den uebergebenen Wert
-     */
-    public void setPlaying(boolean pIsPlaying) {
-        isPlaying=pIsPlaying;
-        setButtonActiveDeActive();
-    }
-
-    /**
-     * setIsMaster setzt den Zustand isMaster auf den uebergebenen Wert
-     * also true, wenn dieser Spieler der Leiter des Spiels ist
-     */
-    public void setIsMaster(boolean pIsMaster) {
-        isMaster=pIsMaster;
-        setButtonActiveDeActive();
-    }    
 
     /**
      * resetGameList setzt die Liste der offenen Spiele zurueck
@@ -371,8 +360,16 @@ public class ClientGUI extends JFrame {
 
     public void verarbeite(String pMessage) {
         System.out.println("verarbeite: "+pMessage);
-        if (pMessage.startsWith("+NICKIS")) {
+        if (pMessage.startsWith(":")) {
+            //Information für den menschlischen Nutzer - ausgeben
+            this.textAusgeben(pMessage);
+        } else if (pMessage.startsWith("+NICKIS") || pMessage.startsWith("+GUESTNICK")) {
             //jetzt sollte das Passwort gesendet werden
+            meinName = pMessage.split(" ")[1];
+            System.out.println("Mein Name ist: "+meinName);
+            if (jTextField7.getText().length()>0) { //Passwort vorhanden
+                nrwclient.execServerCmd("PASS "+jTextField7.getText());
+            }
         } else if (mehrZeilenBufferAn && pMessage.startsWith(">") && !pMessage.startsWith(">end")){
             //System.out.println("anhaengen: "+pMessage);
             mehrZeilenBuffer = mehrZeilenBuffer.concat(pMessage+"\n");
@@ -397,6 +394,19 @@ public class ClientGUI extends JFrame {
             } else {
                 System.out.println("Fehler LIST OPEN GAMES Buffer endet, ohne aktiv zu sein: "+pMessage);
             }
+        } else if (pMessage.startsWith(">end LIST GAMES")) {
+            //Hier wurde ein Buffer beendet
+            if (mehrZeilenBufferAn) {
+                mehrZeilenBufferAn=false;
+                System.out.println(mehrZeilenBuffer);
+                try {
+                    this.textAusgeben(mehrZeilenBuffer);
+                } catch (Exception ex) {
+                    System.out.println("LIST GAMES-format fehlerhaft: "+ex.getStackTrace());
+                }
+            } else {
+                System.out.println("Fehler LIST GAMES Buffer endet, ohne aktiv zu sein: "+pMessage);
+            }
         } else if (pMessage.startsWith(">GAME")) {
             //Spielstand wird gesendet bis >end GAME
             mehrZeilenBuffer = pMessage+"\n";
@@ -409,8 +419,8 @@ public class ClientGUI extends JFrame {
                 try {
                     String[] input = mehrZeilenBuffer.split("\n");
                     int gameNr = Integer.parseInt(input[0].substring(6));
-                    String nameSp1 = input[1].substring(9);
-                    String nameSp2 = input[2].substring(9);
+                    String nameSp1 = input[1].substring(10);
+                    String nameSp2 = input[2].substring(10);
                     int[][] sfeld = new int[11][11];
                     for (int i=5; i<14; i++) { // Feld Zeilenweise lesen
                         for(int j=1; j<10; j++) {
@@ -421,10 +431,20 @@ public class ClientGUI extends JFrame {
                         AbaloneGUI t = gezeigteSpiele.get(gameNr);
                         //Spielernamen usw. übergeben
                         t.zeige(sfeld);
+                        t.setActive(false);
 
                     } else {
                         AbaloneGUI t = new AbaloneGUI(this);
                         t.setGameNr(gameNr);
+                        t.setzeNameSpieler1(nameSp1);
+                        t.setzeNameSpieler2(nameSp2);
+                        if (meinName.equals(nameSp1)) {
+                            t.setzeMeineSpielerNr(1);
+                        } else if (meinName.equals(nameSp2)) {
+                            t.setzeMeineSpielerNr(2);
+                        } else {
+                            t.setzeMeineSpielerNr(0); // nur Beobachter
+                        }
                         gezeigteSpiele.put(gameNr, t);
                         t.zeige(sfeld);
                     }
@@ -434,6 +454,20 @@ public class ClientGUI extends JFrame {
             } else {
                 System.out.println("Fehler GAME Buffer endet, ohne aktiv zu sein: "+pMessage);
             }
+        } else if (pMessage.startsWith("+ACTIVE ")) {
+            //Information erhalten, dass wir im Spiel <nr> am Zug sind
+            try {
+                int gameNr = Integer.parseInt(pMessage.substring(8));
+                System.out.println("Activ setzein in Spiel nr: "+gameNr);
+                if (gezeigteSpiele.containsKey(gameNr)) {
+                    gezeigteSpiele.get(gameNr).setActive(true);
+                } else {
+                    System.out.println("Actives Spiel "+gameNr+" wird nicht angezeigt!?");
+                }
+            } catch (Exception ex) {
+                System.out.println("Spielnr bei ACTIVE falsch uebergeben: "+ex.getStackTrace());
+            }
+
         } else if (pMessage.startsWith(">end ")) {
             //Hier wurde ein Buffer beendet der nicht bekannt ist
             System.out.println("Fehler Unbekannter Buffer: "+pMessage);
@@ -446,9 +480,22 @@ public class ClientGUI extends JFrame {
     public void send(String pMessage) {
         nrwclient.send(pMessage);
     }
-    
+
     public void removeAbaloneGUI(Integer pGameNr) {
         gezeigteSpiele.remove(pGameNr);
     }
 
+    public void setLogin(String pLogin) {
+        if (pLogin.matches("[A-z]+")) {
+            jTextField6.setText(pLogin);
+        }
+    }
+
+    public void setPasswd(String pPass) {
+        if (pPass.matches("[A-z]+")) {
+            jTextField7.setText(pPass);
+        }
+    }
+
+    
 } // end of class ClientGUI

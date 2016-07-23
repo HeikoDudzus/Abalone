@@ -23,7 +23,7 @@ public class Spiel implements Zustand
     private Spieler[] spielerListe = new Spieler[2];
     private Spieler gewinner;
     private Spieler verlierer;
-    private int aktiv = 0; //Spieler 1 (Feldid 0) ist zunächst aktiv
+    private int aktiv = 0; //Spieler 1 (Feldid 0 in Spielerliste) ist zunächst aktiv
     private boolean spielLaeuft;
     private int spielNr;
 
@@ -434,6 +434,9 @@ public class Spiel implements Zustand
         }
         pSpieler.send(">      1 2 3 4 5 6 7 8 9");
         pSpieler.send(">end GAME");
+        if (pSpieler==spielerListe[aktiv]) {
+            pSpieler.send("+ACTIVE "+spielNr);
+        }
     }
 
     /**

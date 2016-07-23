@@ -33,10 +33,13 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     private JTextArea tA1;
     private JScrollPane sp1;
     private JButton button1, bSendCmd;
-    private JPanel southPanel;
+    private JPanel southPanel, infoPanelEast;
+    private JLabel jlNameSpieler1, jlNameSpieler2, jlAmZug;
     private JCheckBox cbInstantmove;
     private Spiel spiel;
     private int gameNr; //SpielNr auf dem Server
+    private String nameSpieler1="Name2", nameSpieler2="Name2";
+    private int meineSpielerNr = 0; // sollte 1 oder 2 sein - 0 ist Beobachter
     private ClientGUI myClientGUI = null; //ClientGUI von der das Brett gestartet wurde 
 
     // Ende Attribute
@@ -67,7 +70,21 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         //sfeldPanel.setLocation(45,50); //x - y Koordinate
         sfeldPanel.setSize(420,360);   // breite und H�he
         sfeldPanel.addMouseListener(sfeldPanel);
-        cp.add(sfeldPanel, BorderLayout.CENTER); //Spielfeld zum Container hinzuf�gen
+        cp.add(sfeldPanel, BorderLayout.CENTER); //Spielfeld zum Container hinzufuegen
+
+        infoPanelEast = new JPanel();
+        infoPanelEast.setLayout(new BoxLayout(infoPanelEast, BoxLayout.Y_AXIS));
+        JLabel jl1 = new JLabel("Name Spieler 1");
+        infoPanelEast.add(jl1);
+        jlNameSpieler1 = new JLabel(nameSpieler1);
+        infoPanelEast.add(jlNameSpieler1);
+        JLabel jl2 = new JLabel("Name Spieler 2");
+        infoPanelEast.add(jl2);
+        jlNameSpieler2 = new JLabel(nameSpieler2);
+        infoPanelEast.add(jlNameSpieler2);
+        jlAmZug = new JLabel("");
+        infoPanelEast.add(jlAmZug);
+        cp.add(infoPanelEast, BorderLayout.EAST);
 
         textfeld = new JTextField();
         textfeld.setBounds(10,10,280,20);
@@ -201,5 +218,38 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
             }
         }
     }
+
+    public void setActive(boolean pActive) {
+        // ich bin am Zug
+        // das sollte angezeigt werden
+        if (pActive) {
+            jlAmZug.setText("Du bist dran!");
+        } else {
+            jlAmZug.setText("");
+        }
+        //this.repaint();
+    }
+
+    public void setzeNameSpieler1(String pName) {
+        nameSpieler1 = pName;
+        jlNameSpieler1.setText(pName);
+    }
+
+    public void setzeNameSpieler2(String pName) {
+        nameSpieler2 = pName;
+        jlNameSpieler2.setText(pName);
+    }
+
+    public void setzeMeineSpielerNr(int pNr) {
+        System.out.println("Meine Nr: "+pNr);
+        meineSpielerNr = pNr;
+
+        if (pNr == 1) {
+            jlNameSpieler1.setText(nameSpieler1+"(*)");
+        } else if (pNr == 2) {
+            jlNameSpieler2.setText(nameSpieler2+"(*)");
+        }
+    }
+
     // Ende Methoden
 } // end of class VierGUI

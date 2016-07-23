@@ -35,6 +35,10 @@ public class TestklasseClientGUI
         gameServ1 = new GameServer(55555);
         clientGU1 = new ClientGUI();
         clientGU2 = new ClientGUI();
+        clientGU1.setLogin("peter");
+        clientGU1.setPasswd("p");
+        clientGU2.setLogin("hans");
+        clientGU2.setPasswd("h");
     }
 
     /**

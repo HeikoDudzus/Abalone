@@ -33,12 +33,12 @@ public class GameServer extends Server implements Zustand
      * @param pClientPort Portnummer des Clients
      */
     public void processNewConnection(String pClientIP, int pClientPort) {
-        send(pClientIP, pClientPort, "Herzlich Willkommen auf dem Abalone-Gameserver!");
-        send(pClientIP, pClientPort, "\"QUIT\" beendet die Verbindung!");
-        System.out.println(pClientIP + " : " + pClientPort + " hat sich eingew�hlt.");
+        send(pClientIP, pClientPort, ":Herzlich Willkommen auf dem Abalone-Gameserver!");
+        send(pClientIP, pClientPort, ":\"QUIT\" beendet die Verbindung!");
+        System.out.println(pClientIP + " : " + pClientPort + " hat sich eingewaehlt.");
         Spieler spieler = new Spieler(pClientIP, pClientPort, this);
         spielerListe.append(spieler);
-        send(pClientIP, pClientPort, "Waehlen Sie einen Nickname mit NICK <name>");
+        send(pClientIP, pClientPort, ":Waehlen Sie einen Nickname mit NICK <name>");
     }
 
     /**
@@ -78,19 +78,18 @@ public class GameServer extends Server implements Zustand
             // NICK angefordert?
             if (stuecke[0].equals("NICK")){
                 // Ist ein Client mit dem gewuenschten Namen noch nicht vorhanden?
-                if (nameVorhanden(stuecke[1]) && gibSpielerNachName(stuecke[1]).gibZustand()==DISCONNECTED) {
+                if (nameVorhanden(stuecke[1]) && stuecke[1].matches("[A-z]+") && gibSpielerNachName(stuecke[1]).gibZustand()==DISCONNECTED) {
                     Spieler temp = gibSpielerNachName(stuecke[1]);
                     temp.setzeZustand(WAITPW);
                     temp.setzeIP(clientIP);
                     temp.setzePort(clientPort);
                     send(clientIP, clientPort, "+NICKIS "+stuecke[1]);
+                    send(clientIP, clientPort, ":Bitte geben sie ihr Passwort an: PASS <password>");
                 } else if (!nameVorhanden(stuecke[1]) && nameErlaubt(stuecke[1])){
                     pClient.setzeName(stuecke[1]);
                     pClient.setzeZustand(WAITPW);
                     send(clientIP, clientPort, "+GUESTNICK " + stuecke[1]);
-                    //warteschlange.enqueue(pClient);
-                    // Wenn schon zwei Spieler angemeldet sind, soll das Spiel gestartet werden
-                    //starteSpielWennMoeglich();
+                    send(clientIP, clientPort, ":Bitte geben sie ein beliebiges Passwort an: PASS <password>");
                 } else {
                     send(clientIP, clientPort, "Name invalid");
                 }
@@ -121,7 +120,7 @@ public class GameServer extends Server implements Zustand
             if (pClient.isGuest()) {
                 send(clientIP, clientPort, "+LOGGEDIN as guest");
                 pClient.setzeZustand(AUTHORIZED);
-            } else if (stuecke.length > 0 && pClient.checkPW(stuecke[1])) {
+            } else if (stuecke.length > 1 && stuecke[1].matches("[A-z]+") &&  pClient.checkPW(stuecke[1])) {
                 send(clientIP, clientPort, "+LOGGEDIN");
                 pClient.setzeZustand(AUTHORIZED);
             } else {
@@ -153,12 +152,12 @@ public class GameServer extends Server implements Zustand
             closeConnection(clientIP, clientPort);
         } else if (pMessage.startsWith("PASSWD ")) {
             String[] stuecke = pMessage.split(" ");
-            if (stuecke.length > 0) {
+            if (stuecke.length > 1 && stuecke[1].matches("[A-z]+")) {
                 pClient.setPasswd(stuecke[1]);
                 pClient.setGuest(false);
                 send(clientIP, clientPort, "+PASSWD changed");
             } else {
-                send(clientIP, clientPort, "ERR passwd missing ? ");
+                send(clientIP, clientPort, "ERR passwd missing or invalid passwd ? ");
             }
         } else if (pMessage.startsWith("CREATE")) {
             //neues Spiel erstellen
@@ -168,7 +167,7 @@ public class GameServer extends Server implements Zustand
         } else if (pMessage.startsWith("SHOW ")) {
             //Anzeige von Informationen
             String[] stuecke = pMessage.split(" ");
-            if (stuecke.length > 0 && stuecke[1].equals("OPEN")) {
+            if (stuecke.length > 1 && stuecke[1].equals("OPEN")) {
                 //Liste der offenen Spiele zurückgeben
                 send(clientIP, clientPort, ">LIST OPEN GAMES");
                 spiele.toFirst();
@@ -180,7 +179,35 @@ public class GameServer extends Server implements Zustand
                 }
                 send(clientIP,clientPort, ">end LIST OPEN GAMES");
 
-            } else {
+            } else if (stuecke.length > 1 && stuecke[1].equals("GAME")) {
+                //Spiel Nr x anzeigen
+                if (stuecke.length > 2) {
+                    int gNr = Integer.parseInt(stuecke[2]);
+                    spiele.toFirst();
+                    while (spiele.hasAccess() && spiele.getContent().gibSpielNr()!=gNr) {
+                        spiele.next();
+                    }
+                    if (spiele.hasAccess()) spiele.getContent().sendeSpielfeld(pClient);
+                    else {
+                        send(clientIP,clientPort, "-Err no such GameNr");
+                    }
+                } else {
+                    send(clientIP,clientPort, "-Err gamenr missing?");
+                }
+            } else if (stuecke.length > 1 && stuecke[1].equals("ALLGAMES")) {
+                //Liste aller Spiele zurückgeben
+                send(clientIP, clientPort, ">LIST GAMES");
+                spiele.toFirst();
+                while (spiele.hasAccess()) {
+                        Spiel ts = spiele.getContent();
+                        send(clientIP, clientPort, "> "+ts.gibSpielNr()+" : "
+                                                       +ts.gibSpielerNr(1).gibName()+" - "
+                                                       +ts.gibSpielerNr(2).gibName());
+                    spiele.next();
+                }
+                send(clientIP,clientPort, ">end LIST GAMES");
+
+            } else{
                 send(clientIP, clientPort, "ERR SHOW unknown option");
             }
         } else if (pMessage.startsWith("JOIN ")) {
