@@ -233,8 +233,11 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         // ich bin am Zug
         // das sollte angezeigt werden
         if (pActive) {
+            jlAmZug.setBackground(Color.red);
+            jlAmZug.setOpaque(true);
             jlAmZug.setText("Du bist dran!");
         } else {
+            jlAmZug.setOpaque(false);
             jlAmZug.setText("");
         }
         //this.repaint();
@@ -278,6 +281,10 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         boardFlipped = !boardFlipped;
         sfeldPanel.setBoardFlipped(boardFlipped);
         this.repaint();
+    }
+    
+    public void setzeSpielerAmZug(int pNr) {
+        sfeldPanel.setSpielerAmZug(pNr);
     }
     // Ende Methoden
 } // end of class VierGUI

@@ -423,6 +423,7 @@ public class ClientGUI extends JFrame {
                     String nameSp2 = input[2].substring(10);
                     boolean sp1imSpiel = Boolean.parseBoolean(input[3].split(" ")[1]);
                     boolean sp2imSpiel = Boolean.parseBoolean(input[3].split(" ")[3]);
+                    int spielerAmZug = Integer.parseInt(input[4].substring(8));
                     int[][] sfeld = new int[11][11];
                     for (int i=5; i<14; i++) { // Feld Zeilenweise lesen
                         for(int j=1; j<10; j++) {
@@ -432,14 +433,14 @@ public class ClientGUI extends JFrame {
                     if (gezeigteSpiele.containsKey(gameNr)) {
                         AbaloneGUI t = gezeigteSpiele.get(gameNr);
                         //Spielernamen usw. übergeben
-                        t.zeige(sfeld);
+                        t.setzeSpielerAmZug(spielerAmZug);
                         t.setActive(false);
                         if (sp1imSpiel && !sp2imSpiel) {
                             t.setzeGewinner(1);
                         } else if (!sp1imSpiel && sp2imSpiel) {
                             t.setzeGewinner(2);
                         }
-
+                        t.zeige(sfeld);
                     } else {
                         AbaloneGUI t = new AbaloneGUI(this);
                         t.setGameNr(gameNr);
@@ -458,7 +459,7 @@ public class ClientGUI extends JFrame {
                         } else if (!sp1imSpiel && sp2imSpiel) {
                             t.setzeGewinner(2);
                         }
-
+                        t.setzeSpielerAmZug(spielerAmZug);
                         t.zeige(sfeld);
                     }
                 } catch (Exception ex) {

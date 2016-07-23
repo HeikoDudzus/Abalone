@@ -17,9 +17,11 @@ public class SpielfeldPanel extends JPanel implements MouseListener
     private Position pos2 = new Position(2,3);
     private Position pos3 = new Position(3,4);
     private int zustandPositionsClick = 0; // 0 noch nichts, 1 pos1 gewählt, 2 pos3 gewählt
+    private int spielerAmZug = 0; //0 niemand, 1 Schwarz, 2 Weiß
     private int xposPressed, yposPressed;
     private AbaloneGUI myAbaloneGUI;
     private boolean boardFlipped = false;
+    
 
     /**
      * Konstruktor fuer Objekte der Klasse SpielfeldPanel
@@ -45,6 +47,16 @@ public class SpielfeldPanel extends JPanel implements MouseListener
         int bmy= 0; //Starteckpunkt y-Koord
         g.setColor(Color.green);
         g.fillRect(0,0,w,h);
+        if (spielerAmZug==1) {
+            g.setColor(Color.black);
+            g.fillOval(2,2,r,r);
+        } else if (spielerAmZug==2) {
+            g.setColor(Color.white);
+            g.fillOval(2,2,r,r);
+        } else {
+            g.setColor(Color.black);
+            g.drawOval(2,2,r,r);
+        }
         for (int i=1;i<10 ;i++ ) {
             for (int j=1;j<10 ;j++ ) {
                 if (i+j>5 && i+j<=14) {
@@ -252,6 +264,10 @@ public class SpielfeldPanel extends JPanel implements MouseListener
 
     public void setBoardFlipped(boolean pBF) {
         boardFlipped = pBF;
+    }
+    
+    public void setSpielerAmZug(int pSNr) {
+        spielerAmZug = pSNr;
     }
 
 }
