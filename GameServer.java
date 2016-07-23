@@ -261,7 +261,7 @@ public class GameServer extends Server implements Zustand
                 send(clientIP, clientPort, "ERR MOVE wrong format - expected MOVE gnr pos1 pos2 pos3");
             }
         } else {
-            send(clientIP, clientPort, "ERR invalid command");
+            send(clientIP, clientPort, "ERR invalid command - try HELP");
         }
     }
 
