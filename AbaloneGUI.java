@@ -40,6 +40,7 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     private int gameNr; //SpielNr auf dem Server
     private String nameSpieler1="Name2", nameSpieler2="Name2";
     private int meineSpielerNr = 0; // sollte 1 oder 2 sein - 0 ist Beobachter
+    private int gewinner = 0; // 0-spiel laeuft noch sonst Spielernummer, die Gewinnt
     private ClientGUI myClientGUI = null; //ClientGUI von der das Brett gestartet wurde 
 
     // Ende Attribute
@@ -95,7 +96,7 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         southPanel.setLayout(new FlowLayout());
 
         cbInstantmove = new JCheckBox("InstantMove");
-        cbInstantmove.setEnabled(true);
+        cbInstantmove.setSelected(true);
         southPanel.add(cbInstantmove);
 
         button1 = new JButton();
@@ -198,8 +199,8 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     }
 
     public void ziehe() {
-        if (sfeldPanel.gibZug() != null) {
-            // es wurden drei Felder ausgewählt
+        if (sfeldPanel.gibZug() != null && gewinner == 0) {
+            // es wurden drei Felder ausgewählt und noch niemand hat gewonnen
             Position[] felder = sfeldPanel.gibZug();
             int spielerNr = sfeldPanel.gibSpielerDesZuges();
             System.out.println("Pos1: "+felder[0].gibX()+", "+felder[0].gibY());
@@ -251,5 +252,16 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         }
     }
 
+    public void setzeGewinner(int pNr) {
+        gewinner=pNr;
+        if (meineSpielerNr == gewinner) {
+            textfeld.setText("Du hast gewonnen!");
+        } else if (meineSpielerNr > 0) {
+            textfeld.setText("Du hast verloren!");            
+        } else {
+            textfeld.setText("Spieler "+pNr+" hat gewonnen!");
+        }
+
+    }
     // Ende Methoden
 } // end of class VierGUI
