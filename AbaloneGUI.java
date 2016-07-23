@@ -32,16 +32,17 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
     private JTextField textfeld, tfBefehl;
     private JTextArea tA1;
     private JScrollPane sp1;
-    private JButton button1, bSendCmd;
+    private JButton button1, bSendCmd, bFlipBoard;
     private JPanel southPanel, infoPanelEast;
     private JLabel jlNameSpieler1, jlNameSpieler2, jlAmZug;
-    private JCheckBox cbInstantmove;
+    private JCheckBox cbInstantmove, cbFlipBoard;
     private Spiel spiel;
     private int gameNr; //SpielNr auf dem Server
     private String nameSpieler1="Name2", nameSpieler2="Name2";
     private int meineSpielerNr = 0; // sollte 1 oder 2 sein - 0 ist Beobachter
     private int gewinner = 0; // 0-spiel laeuft noch sonst Spielernummer, die Gewinnt
     private ClientGUI myClientGUI = null; //ClientGUI von der das Brett gestartet wurde 
+    private boolean boardFlipped = false;
 
     // Ende Attribute
     public AbaloneGUI(ClientGUI pClientGUI) {
@@ -75,11 +76,11 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
 
         infoPanelEast = new JPanel();
         infoPanelEast.setLayout(new BoxLayout(infoPanelEast, BoxLayout.Y_AXIS));
-        JLabel jl1 = new JLabel("Name Spieler 1");
+        JLabel jl1 = new JLabel("Spieler Schwarz:        ");
         infoPanelEast.add(jl1);
         jlNameSpieler1 = new JLabel(nameSpieler1);
         infoPanelEast.add(jlNameSpieler1);
-        JLabel jl2 = new JLabel("Name Spieler 2");
+        JLabel jl2 = new JLabel("Spieler Weiss:");
         infoPanelEast.add(jl2);
         jlNameSpieler2 = new JLabel(nameSpieler2);
         infoPanelEast.add(jlNameSpieler2);
@@ -94,6 +95,11 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
 
         southPanel = new JPanel();
         southPanel.setLayout(new FlowLayout());
+
+        bFlipBoard = new JButton();
+        bFlipBoard.setText("FlipBoard");
+        bFlipBoard.addActionListener(this);
+        southPanel.add(bFlipBoard);
 
         cbInstantmove = new JCheckBox("InstantMove");
         cbInstantmove.setSelected(true);
@@ -153,7 +159,10 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
             //Zug ziehen
             ziehe();
             // } else if  (source == button2) { //gibt es noch nicht
-        } 
+        } else if (source == bFlipBoard) {
+            flipBoard();
+        }
+
     }
 
     public void nachrichtAnzeigen(String text) {
@@ -233,12 +242,12 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
 
     public void setzeNameSpieler1(String pName) {
         nameSpieler1 = pName;
-        jlNameSpieler1.setText(pName);
+        jlNameSpieler1.setText(pName+"\n");
     }
 
     public void setzeNameSpieler2(String pName) {
         nameSpieler2 = pName;
-        jlNameSpieler2.setText(pName);
+        jlNameSpieler2.setText(pName+"\n");
     }
 
     public void setzeMeineSpielerNr(int pNr) {
@@ -246,9 +255,10 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
         meineSpielerNr = pNr;
 
         if (pNr == 1) {
-            jlNameSpieler1.setText(nameSpieler1+"(*)");
+            jlNameSpieler1.setText(nameSpieler1+"(*)\n");
         } else if (pNr == 2) {
-            jlNameSpieler2.setText(nameSpieler2+"(*)");
+            jlNameSpieler2.setText(nameSpieler2+"(*)\n");
+            flipBoard();
         }
     }
 
@@ -262,6 +272,12 @@ public class AbaloneGUI extends JFrame implements ActionListener { //ActionListe
             textfeld.setText("Spieler "+pNr+" hat gewonnen!");
         }
 
+    }
+
+    public void flipBoard() {
+        boardFlipped = !boardFlipped;
+        sfeldPanel.setBoardFlipped(boardFlipped);
+        this.repaint();
     }
     // Ende Methoden
 } // end of class VierGUI

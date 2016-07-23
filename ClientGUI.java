@@ -462,7 +462,8 @@ public class ClientGUI extends JFrame {
                         t.zeige(sfeld);
                     }
                 } catch (Exception ex) {
-                    System.out.println("Spielformat fehlerhaft: "+ex.getStackTrace());
+                    System.out.println("Spielformat fehlerhaft: ");
+                    ex.printStackTrace();
                 }
             } else {
                 System.out.println("Fehler GAME Buffer endet, ohne aktiv zu sein: "+pMessage);

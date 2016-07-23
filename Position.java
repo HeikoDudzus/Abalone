@@ -59,4 +59,11 @@ public class Position
     public String toString() {
         return "" + (char)('A'-1+y) + x;
     }
+    
+    /**
+     * gibt die Position zurück, wie sie einem um 180° gedrehten Feld enstprechen würde
+     */
+    public Position flipped() {
+        return new Position(10-x, 10-y);
+    }
 }

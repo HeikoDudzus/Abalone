@@ -19,6 +19,7 @@ public class SpielfeldPanel extends JPanel implements MouseListener
     private int zustandPositionsClick = 0; // 0 noch nichts, 1 pos1 gewählt, 2 pos3 gewählt
     private int xposPressed, yposPressed;
     private AbaloneGUI myAbaloneGUI;
+    private boolean boardFlipped = false;
 
     /**
      * Konstruktor fuer Objekte der Klasse SpielfeldPanel
@@ -59,18 +60,33 @@ public class SpielfeldPanel extends JPanel implements MouseListener
                         g.setColor(Color.yellow);
                         g.fillOval(bmx+(i-1)*2*r+(j-1)*r,bmy+(int)((double)(j-1)*Math.sqrt(3)*(double)r),2*r,2*r); 
                     }
-                    switch (spielfeld[j][i]) {
-                        case 2: 
-                        g.setColor(Color.white); 
+                    if (!boardFlipped) {
+                        switch (spielfeld[j][i]) {
+                            case 2: 
+                            g.setColor(Color.white); 
 
-                        break;
-                        case 1: 
-                        g.setColor(Color.black);
-                        break;
-                        default: 
-                        g.setColor(Color.gray);
+                            break;
+                            case 1: 
+                            g.setColor(Color.black);
+                            break;
+                            default: 
+                            g.setColor(Color.gray);
 
-                    } // end of switch
+                        } // end of switch
+                    } else {
+                        switch (spielfeld[10-j][10-i]) {
+                            case 2: 
+                            g.setColor(Color.white); 
+
+                            break;
+                            case 1: 
+                            g.setColor(Color.black);
+                            break;
+                            default: 
+                            g.setColor(Color.gray);
+
+                        } // end of switch
+                    }
                     g.fillOval(1+bmx+(i-1)*2*r+(j-1)*r,1+bmy+(int)((double)(j-1)*Math.sqrt(3)*(double)r),2*r-2,2*r-2); 
                 }
             } // end of for j 
@@ -110,8 +126,10 @@ public class SpielfeldPanel extends JPanel implements MouseListener
      * ansonsten null
      */
     public Position[] gibZug() {
-        if (zustandPositionsClick == 3) {
+        if (zustandPositionsClick == 3 && !boardFlipped) {
             return new Position[] {pos1, pos2, pos3};
+        } else if (zustandPositionsClick == 3 && boardFlipped) {
+            return new Position[] {pos1.flipped(), pos2.flipped(), pos3.flipped()};
         } else {
             return null;
         }
@@ -230,6 +248,10 @@ public class SpielfeldPanel extends JPanel implements MouseListener
         markierungen[pos2.gibX()][10-pos2.gibY()]=0;
         markierungen[pos3.gibX()][10-pos3.gibY()]=0;
         zustandPositionsClick=0;
+    }
+
+    public void setBoardFlipped(boolean pBF) {
+        boardFlipped = pBF;
     }
 
 }
