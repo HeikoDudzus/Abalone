@@ -97,24 +97,57 @@ public class Spiel implements Zustand
             int anzahl = grundseitenVektor.laenge() + 1;
             if (anzahl == 1) {
                 return laengszug(pGrundseite1,pRichtung,pSpieler);
-            } else if (anzahl == 2) {
-                boolean status1 = laengszug(pGrundseite1,pRichtung,pSpieler);
-                boolean status2 = laengszug(pGrundseite2,pRichtung,pSpieler);
-                return status1 | status2;
-            } else if (anzahl == 3){
-                int x1 = pGrundseite1.gibX();
-                int y1 = pGrundseite1.gibY();
-                int x2 = pGrundseite2.gibX();
-                int y2 = pGrundseite2.gibY();
-                Position mitte = new Position((x1+x2)/2, (y1+y2)/2);
-                boolean status1 = laengszug(pGrundseite1,pRichtung, pSpieler);
-                boolean status2 = laengszug(pGrundseite2,pRichtung, pSpieler);
-                boolean status3 = laengszug(mitte,pRichtung, pSpieler);
-                return status1 | status2 | status3;
+            } else if (anzahl == 2 || anzahl == 3) {
+                List<Position> positionen = new List<Position>();
+                positionen.append(pGrundseite1);
+                positionen.append(pGrundseite2);
+                if (anzahl == 3) {
+                    Position mitte = pGrundseite1.gibMitte(pGrundseite2);
+                    positionen.append(mitte);
+                }
+                if (alleFreiFuerQuerzug(positionen, pRichtung)) {
+                    return elementarZug(positionen,pRichtung,pSpieler);
+                } else return false;
             } else {
                 return false;
             }
         }
+    }
+
+    private boolean elementarZug(List<Position> positionen, Vektor pRichtung, Spieler pSpieler){
+        if (positionen.isEmpty()) return false;
+        positionen.toFirst();
+        while (positionen.hasAccess()) {
+            Position pos = positionen.getContent();
+            Position ziel = pos.gibZiel(pRichtung);
+            int x = pos.gibX();
+            int y = pos.gibY();
+            int zielX = ziel.gibX();
+            int zielY = ziel.gibY();
+            if (!imFeld(y,x)) return false;
+            if (!imFeld(zielY,zielX)) return false;
+            Stein stein = spielfeld[y][x].gibStein();
+            if (stein.gibBesitzer() != pSpieler) return false;
+            if (spielfeld[zielY][zielX].gibStein() != null) return false;
+            spielfeld[zielY][zielX].setzeStein(stein);
+            spielfeld[y][x].setzeStein(null);
+            positionen.next();
+        }
+        return true;
+    }
+
+    private boolean alleFreiFuerQuerzug(List<Position> positionen, Vektor v) {
+        if (positionen.isEmpty()) return false;
+        positionen.toFirst();
+        while (positionen.hasAccess()) {
+            Position pos = positionen.getContent();
+            Position ziel = pos.gibZiel(v);
+            if (!imFeld(pos)) return false;
+            if (!imFeld(ziel)) return false;
+            if (spielfeld[ziel.gibY()][ziel.gibX()] != null) return false;
+            positionen.next();
+        }
+        return true;
     }
 
     /**
@@ -220,7 +253,7 @@ public class Spiel implements Zustand
         verlierer = pSpieler;
         gewinner = gibGegenspieler(pSpieler);
     }
-    
+
     /**
      * Prueft, ob eine gegebene Position innerhalb des gueltigen Spielfeldes ist.
      * @param y Zeilennummer des zu pruefenden Feldes
@@ -264,6 +297,10 @@ public class Spiel implements Zustand
         if (y <= x - 5) in = false;
         if (y > x + 5) in = false;
         return in;
+    }
+
+    private boolean imFeld(Position p) {
+        return imFeld(p.gibY(), p.gibX());
     }
 
     /**
