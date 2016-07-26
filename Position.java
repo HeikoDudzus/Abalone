@@ -44,6 +44,14 @@ public class Position
         return y;
     }
     
+    public Position gibZiel(Vektor v) {
+        return new Position(x+v.gibX(), y+v.gibY());
+    }
+    
+    public Position gibMitte(Position p) {
+        return new Position( (x+p.gibX())/2, (y+p.gibY())/2 );
+    }
+    
     /**
      * zulaessig prüft ob die Position im Feld liegt
      * 
